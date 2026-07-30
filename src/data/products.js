@@ -1,0 +1,58 @@
+
+
+const products = [
+  {
+    id: 1,
+    name: "Fresh Tomatoes",
+    farmer: "Ahmed Farms",
+    state: "Kaduna",
+    category: "Vegetables",
+    price: 5000,
+    rating: 4.9,
+    reviews: 128,
+    stock: 54,
+    featured: true,
+    image: "/images/products/pepper.png",
+  },
+  {
+    id: 2,
+    name: "Red Pepper",
+    farmer: "Amina Agro",
+    state: "Kano",
+    category: "Vegetables",
+    price: 2500,
+    rating: 4.8,
+    reviews: 96,
+    stock: 75,
+    featured: true,
+    image: "/images/products/pepper.png",
+  },
+  {
+    id: 3,
+    name: "White Rice (50kg)",
+    farmer: "Kebbi Harvest",
+    state: "Kebbi",
+    category: "Grains",
+    price: 68000,
+    rating: 4.9,
+    reviews: 210,
+    stock: 18,
+    featured: true,
+    image: "/images/products/rice.png",
+  },
+  {
+    id: 4,
+    name: "Fresh Yam",
+    farmer: "Benue Farms",
+    state: "Benue",
+    category: "Tubers",
+    price: 8500,
+    rating: 4.7,
+    reviews: 72,
+    stock: 30,
+    featured: true,
+    image: "/images/products/yam.png",
+  },
+];
+
+export default products;
