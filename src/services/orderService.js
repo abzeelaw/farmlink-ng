@@ -63,6 +63,42 @@ export const createOrderItems = async (
   return data;
 };
 
+export const createPaidOrder = async ({
+  userId,
+  totalAmount,
+  paymentReference,
+  checkoutData,
+  cartItems,
+}) => {
+  const items = cartItems.map((item) => ({
+    product_id: item.id,
+    quantity: item.quantity,
+    unit_price: item.price,
+  }));
+
+  const { data, error } = await supabase.rpc(
+    "create_paid_order",
+    {
+      p_buyer_id: userId,
+      p_total_amount: totalAmount,
+      p_payment_reference: paymentReference,
+
+      p_delivery_address: checkoutData.address,
+      p_delivery_state: checkoutData.state,
+      p_delivery_city: checkoutData.city,
+      p_phone: checkoutData.phone,
+      p_notes: checkoutData.notes || null,
+
+      p_items: items,
+    }
+  );
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+};
 
 /* =========================================
    GET CUSTOMER ORDERS

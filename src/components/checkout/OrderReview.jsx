@@ -1,25 +1,25 @@
-import { useState } from "react";
+
 import { useCart } from "../../context/CartContext";
 import { Button } from "../ui";
 import toast from "react-hot-toast";
 import { useCheckout } from "../../context/CheckoutContext";
-import { useAuth } from "../../context/AuthContext";
 import { initializePayment } from "../../utils/paystack";
-import { createOrder } from "../../services/orderService";
+import { createPaidOrder } from "../../services/orderService";
+import { useAuth } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const OrderReview = () => {
   const { cartItems, totalItems, totalPrice, clearCart } = useCart();
   const { checkoutData } = useCheckout();
   const { user } = useAuth();
-
-  const [processing, setProcessing] = useState(false);
+  const navigate = useNavigate();
 
   const deliveryFee = totalPrice > 0 ? 2500 : 0;
   const total = totalPrice + deliveryFee;
 
   const handlePayment = () => {
     if (!user) {
-      toast.error("Please login before making payment.");
+      toast.error("Please log in before making payment.");
       return;
     }
 
@@ -40,8 +40,6 @@ const OrderReview = () => {
       return;
     }
 
-    setProcessing(true);
-
     initializePayment({
       email: checkoutData.email,
       fullName: checkoutData.fullName,
@@ -49,40 +47,49 @@ const OrderReview = () => {
 
       onSuccess: async (transaction) => {
         try {
-          toast.loading("Creating your order...", {
-            id: "creating-order",
+          toast.loading("Processing your order...", {
+            id: "order-processing",
           });
 
-          const order = await createOrder({
+          const orderId = await createPaidOrder({
             userId: user.id,
-            checkoutData,
-            cartItems,
+
             totalAmount: total,
+
             paymentReference: transaction.reference,
+
+            checkoutData,
+
+            cartItems,
           });
-
-          toast.dismiss("creating-order");
-
-          toast.success("Order placed successfully!");
-
-          console.log("Order created:", order);
 
           clearCart();
-        } catch (error) {
-          toast.dismiss("creating-order");
 
-          console.error("Order creation error:", error);
+          toast.success(
+            "Payment successful! Your order has been placed.",
+            {
+              id: "order-processing",
+            }
+          );
+
+          navigate(`/orders/${orderId}`);
+        } catch (error) {
+          console.error(
+            "Order creation failed:",
+            error
+          );
 
           toast.error(
-            error.message || "Payment succeeded but order creation failed."
+            error.message ||
+              "Payment succeeded, but we could not create your order. Please contact support.",
+            {
+              id: "order-processing",
+            }
           );
-        } finally {
-          setProcessing(false);
         }
       },
 
       onCancel: () => {
-        setProcessing(false);
         toast("Payment cancelled.");
       },
     });
@@ -119,7 +126,9 @@ const OrderReview = () => {
 
             <span className="font-bold text-emerald-600">
               ₦
-              {(item.price * item.quantity).toLocaleString()}
+              {(
+                item.price * item.quantity
+              ).toLocaleString()}
             </span>
           </div>
         ))}
@@ -176,8 +185,8 @@ const OrderReview = () => {
             </p>
 
             <p className="text-sm text-slate-500">
-              Secure online payment with card, bank transfer,
-              USSD and more.
+              Secure online payment with card,
+              bank transfer, USSD and more.
             </p>
           </div>
         </label>
@@ -187,14 +196,12 @@ const OrderReview = () => {
       <Button
         className="mt-8 w-full"
         onClick={handlePayment}
-        disabled={processing}
       >
-        {processing
-          ? "Processing..."
-          : "Proceed to Payment"}
+        Proceed to Payment
       </Button>
     </div>
   );
 };
 
 export default OrderReview;
+
