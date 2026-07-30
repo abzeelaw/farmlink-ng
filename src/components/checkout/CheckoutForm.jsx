@@ -1,9 +1,11 @@
+
 import { useEffect } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { useCheckout } from "../../context/CheckoutContext";
+import { useAuth } from "../../context/AuthContext";
 
 const checkoutSchema = z.object({
   fullName: z.string().min(3, "Full name is required"),
@@ -21,10 +23,12 @@ const checkoutSchema = z.object({
 
 const CheckoutForm = () => {
   const { checkoutData, setCheckoutData } = useCheckout();
+  const { user, profile } = useAuth();
 
   const {
     register,
     control,
+    setValue,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(checkoutSchema),
@@ -32,9 +36,46 @@ const CheckoutForm = () => {
     mode: "onChange",
   });
 
+  /*
+    =========================================
+    AUTO-FILL LOGGED-IN USER INFORMATION
+    =========================================
+  */
+
+  useEffect(() => {
+    if (!user) return;
+
+    const fullName =
+      profile?.full_name ||
+      user.user_metadata?.full_name ||
+      "";
+
+    const email = user.email || "";
+
+    if (fullName) {
+      setValue("fullName", fullName);
+    }
+
+    if (email) {
+      setValue("email", email);
+    }
+  }, [user, profile, setValue]);
+
+  /*
+    =========================================
+    WATCH FORM VALUES
+    =========================================
+  */
+
   const values = useWatch({
     control,
   });
+
+  /*
+    =========================================
+    SAVE CHECKOUT DATA
+    =========================================
+  */
 
   useEffect(() => {
     setCheckoutData((previousData) => {
@@ -48,13 +89,23 @@ const CheckoutForm = () => {
 
   return (
     <div className="rounded-3xl bg-white p-8 shadow-lg">
-      <h2 className="mb-8 text-2xl font-bold">
-        Customer Information
-      </h2>
+
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold text-slate-900">
+          Delivery Information
+        </h2>
+
+        <p className="mt-2 text-sm text-slate-500">
+          Enter the information needed to deliver your order.
+        </p>
+      </div>
 
       <div className="grid gap-6 md:grid-cols-2">
 
-        {/* Full Name */}
+        {/* =====================================
+            FULL NAME
+        ====================================== */}
+
         <div>
           <label className="mb-2 block font-medium">
             Full Name
@@ -66,12 +117,17 @@ const CheckoutForm = () => {
             placeholder="John Doe"
           />
 
-          <p className="mt-1 text-sm text-red-500">
-            {errors.fullName?.message}
-          </p>
+          {errors.fullName && (
+            <p className="mt-1 text-sm text-red-500">
+              {errors.fullName.message}
+            </p>
+          )}
         </div>
 
-        {/* Email */}
+        {/* =====================================
+            EMAIL
+        ====================================== */}
+
         <div>
           <label className="mb-2 block font-medium">
             Email Address
@@ -80,16 +136,22 @@ const CheckoutForm = () => {
           <input
             type="email"
             {...register("email")}
-            className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-emerald-500"
+            className="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 outline-none transition focus:border-emerald-500"
             placeholder="john@email.com"
+            readOnly={!!user}
           />
 
-          <p className="mt-1 text-sm text-red-500">
-            {errors.email?.message}
-          </p>
+          {errors.email && (
+            <p className="mt-1 text-sm text-red-500">
+              {errors.email.message}
+            </p>
+          )}
         </div>
 
-        {/* Phone */}
+        {/* =====================================
+            PHONE
+        ====================================== */}
+
         <div>
           <label className="mb-2 block font-medium">
             Phone Number
@@ -101,12 +163,17 @@ const CheckoutForm = () => {
             placeholder="08012345678"
           />
 
-          <p className="mt-1 text-sm text-red-500">
-            {errors.phone?.message}
-          </p>
+          {errors.phone && (
+            <p className="mt-1 text-sm text-red-500">
+              {errors.phone.message}
+            </p>
+          )}
         </div>
 
-        {/* State */}
+        {/* =====================================
+            STATE
+        ====================================== */}
+
         <div>
           <label className="mb-2 block font-medium">
             State
@@ -118,12 +185,17 @@ const CheckoutForm = () => {
             placeholder="Kaduna"
           />
 
-          <p className="mt-1 text-sm text-red-500">
-            {errors.state?.message}
-          </p>
+          {errors.state && (
+            <p className="mt-1 text-sm text-red-500">
+              {errors.state.message}
+            </p>
+          )}
         </div>
 
-        {/* City */}
+        {/* =====================================
+            CITY
+        ====================================== */}
+
         <div>
           <label className="mb-2 block font-medium">
             City
@@ -135,12 +207,17 @@ const CheckoutForm = () => {
             placeholder="Zaria"
           />
 
-          <p className="mt-1 text-sm text-red-500">
-            {errors.city?.message}
-          </p>
+          {errors.city && (
+            <p className="mt-1 text-sm text-red-500">
+              {errors.city.message}
+            </p>
+          )}
         </div>
 
-        {/* Address */}
+        {/* =====================================
+            DELIVERY ADDRESS
+        ====================================== */}
+
         <div className="md:col-span-2">
           <label className="mb-2 block font-medium">
             Delivery Address
@@ -153,12 +230,17 @@ const CheckoutForm = () => {
             placeholder="Enter your complete delivery address"
           />
 
-          <p className="mt-1 text-sm text-red-500">
-            {errors.address?.message}
-          </p>
+          {errors.address && (
+            <p className="mt-1 text-sm text-red-500">
+              {errors.address.message}
+            </p>
+          )}
         </div>
 
-        {/* Notes */}
+        {/* =====================================
+            NOTES
+        ====================================== */}
+
         <div className="md:col-span-2">
           <label className="mb-2 block font-medium">
             Delivery Notes (Optional)
@@ -173,6 +255,27 @@ const CheckoutForm = () => {
         </div>
 
       </div>
+
+      {/* =====================================
+          ROLE INFORMATION
+      ====================================== */}
+
+      {user && (
+        <div className="mt-6 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3">
+
+          <p className="text-sm text-emerald-700">
+            You are checking out as{" "}
+            <span className="font-semibold">
+              {profile?.role === "farmer"
+                ? "Farmer"
+                : "Buyer"}
+            </span>
+            .
+          </p>
+
+        </div>
+      )}
+
     </div>
   );
 };

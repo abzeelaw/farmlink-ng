@@ -1,4 +1,11 @@
-import { createContext, useContext, useEffect, useState } from "react";
+
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+
 import { supabase } from "../lib/supabase";
 
 const AuthContext = createContext();
@@ -8,6 +15,9 @@ export const AuthProvider = ({ children }) => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  /*
+    Load authenticated user and profile
+  */
   const loadUser = async (session) => {
     if (!session?.user) {
       setUser(null);
@@ -18,34 +28,75 @@ export const AuthProvider = ({ children }) => {
 
     setUser(session.user);
 
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("profiles")
       .select("*")
       .eq("id", session.user.id)
       .single();
 
-    setProfile(data);
+    if (error) {
+      console.error(
+        "Failed to load user profile:",
+        error
+      );
+
+      setProfile(null);
+    } else {
+      setProfile(data);
+    }
+
     setLoading(false);
   };
 
+  /*
+    Logout
+  */
+  const logout = async () => {
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      throw error;
+    }
+
+    setUser(null);
+    setProfile(null);
+  };
+
+  /*
+    Initialize authentication
+  */
   useEffect(() => {
-    const init = async () => {
+    let mounted = true;
+
+    const initializeAuth = async () => {
       const {
         data: { session },
       } = await supabase.auth.getSession();
 
-      await loadUser(session);
+      if (mounted) {
+        await loadUser(session);
+      }
     };
 
-    init();
+    initializeAuth();
 
+    /*
+      Listen for login/logout/session changes
+    */
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_, session) => {
-      await loadUser(session);
-    });
+    } = supabase.auth.onAuthStateChange(
+      async (_event, session) => {
+        if (mounted) {
+          await loadUser(session);
+        }
+      }
+    );
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   return (
@@ -54,6 +105,7 @@ export const AuthProvider = ({ children }) => {
         user,
         profile,
         loading,
+        logout,
       }}
     >
       {children}
@@ -61,4 +113,14 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+
+  if (!context) {
+    throw new Error(
+      "useAuth must be used within AuthProvider."
+    );
+  }
+
+  return context;
+};
