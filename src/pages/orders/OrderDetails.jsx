@@ -1,6 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
+import {
+  Check,
+  Clock,
+  Package,
+  Truck,
+  CircleCheck,
+} from "lucide-react";
 
 import { useAuth } from "../../context/AuthContext";
 import {
@@ -26,7 +33,7 @@ const OrderDetails = () => {
       try {
         const orderData = await getOrderById(id);
 
-        // Make sure the customer can only view their own order
+        // Customer can only view their own order
         if (orderData.buyer_id !== user.id) {
           throw new Error("You cannot view this order.");
         }
@@ -49,7 +56,58 @@ const OrderDetails = () => {
     loadOrder();
   }, [id, user]);
 
-  // Loading state
+  // -----------------------------------------
+  // STATUS CONFIGURATION
+  // -----------------------------------------
+
+  const statusSteps = [
+    {
+      key: "pending",
+      label: "Order Placed",
+      description:
+        "Your order has been received.",
+      icon: Clock,
+    },
+    {
+      key: "processing",
+      label: "Processing",
+      description:
+        "The farmer is preparing your order.",
+      icon: Package,
+    },
+    {
+      key: "shipped",
+      label: "Out for Delivery",
+      description:
+        "Your order is on its way to you.",
+      icon: Truck,
+    },
+    {
+      key: "delivered",
+      label: "Delivered",
+      description:
+        "Your order has been delivered.",
+      icon: CircleCheck,
+    },
+  ];
+
+  const statusOrder = [
+    "pending",
+    "processing",
+    "shipped",
+    "delivered",
+  ];
+
+  const currentStatus =
+    order?.order_status || "pending";
+
+  const currentStatusIndex =
+    statusOrder.indexOf(currentStatus);
+
+  // -----------------------------------------
+  // LOADING
+  // -----------------------------------------
+
   if (loading) {
     return (
       <section className="section-padding">
@@ -62,7 +120,10 @@ const OrderDetails = () => {
     );
   }
 
-  // Order not found
+  // -----------------------------------------
+  // ORDER NOT FOUND
+  // -----------------------------------------
+
   if (!order) {
     return (
       <section className="section-padding">
@@ -72,7 +133,8 @@ const OrderDetails = () => {
           </h1>
 
           <p className="mt-2 text-slate-500">
-            We could not find the order you are looking for.
+            We could not find the order you are
+            looking for.
           </p>
 
           <Link
@@ -90,7 +152,10 @@ const OrderDetails = () => {
     <section className="section-padding bg-slate-50">
       <div className="container-width">
 
-        {/* Header */}
+        {/* -------------------------------- */}
+        {/* HEADER */}
+        {/* -------------------------------- */}
+
         <div className="mb-10">
           <Link
             to="/orders"
@@ -99,25 +164,138 @@ const OrderDetails = () => {
             ← Back to Orders
           </Link>
 
-          <h1 className="mt-5 text-4xl font-bold text-slate-900">
-            Order Details
-          </h1>
+          <div className="mt-5 flex flex-col justify-between gap-4 md:flex-row md:items-end">
+            <div>
+              <h1 className="text-4xl font-bold text-slate-900">
+                Order Details
+              </h1>
 
-          <p className="mt-2 text-slate-500">
-            Order ID: {order.id}
-          </p>
+              <p className="mt-2 break-all text-sm text-slate-500">
+                Order ID: {order.id}
+              </p>
 
-          <p className="mt-1 text-sm text-slate-400">
-            Placed on{" "}
-            {new Date(order.created_at).toLocaleDateString()}
-          </p>
+              <p className="mt-1 text-sm text-slate-400">
+                Placed on{" "}
+                {new Date(
+                  order.created_at
+                ).toLocaleDateString()}
+              </p>
+            </div>
+
+            {/* Current Status */}
+            <span className="w-fit rounded-full bg-emerald-100 px-4 py-2 text-sm font-semibold capitalize text-emerald-700">
+              {currentStatus}
+            </span>
+          </div>
+        </div>
+
+        {/* -------------------------------- */}
+        {/* ORDER STATUS TIMELINE */}
+        {/* -------------------------------- */}
+
+        <div className="mb-8 rounded-3xl bg-white p-8 shadow-sm">
+          <h2 className="mb-8 text-2xl font-bold text-slate-900">
+            Order Progress
+          </h2>
+
+          <div className="relative">
+            {statusSteps.map(
+              (step, index) => {
+                const StepIcon = step.icon;
+
+                const isCompleted =
+                  index <= currentStatusIndex;
+
+                const isCurrent =
+                  index === currentStatusIndex;
+
+                const isLast =
+                  index ===
+                  statusSteps.length - 1;
+
+                return (
+                  <div
+                    key={step.key}
+                    className="relative flex gap-5"
+                  >
+                    {/* Connector */}
+                    {!isLast && (
+                      <div
+                        className={`absolute left-5 top-10 h-full w-0.5 ${
+                          index <
+                          currentStatusIndex
+                            ? "bg-emerald-500"
+                            : "bg-slate-200"
+                        }`}
+                      />
+                    )}
+
+                    {/* Icon */}
+                    <div
+                      className={`relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
+                        isCompleted
+                          ? "bg-emerald-600 text-white"
+                          : "bg-slate-100 text-slate-400"
+                      } ${
+                        isCurrent
+                          ? "ring-4 ring-emerald-100"
+                          : ""
+                      }`}
+                    >
+                      {index <
+                      currentStatusIndex ? (
+                        <Check size={20} />
+                      ) : (
+                        <StepIcon size={20} />
+                      )}
+                    </div>
+
+                    {/* Content */}
+                    <div
+                      className={`pb-8 ${
+                        isLast
+                          ? "pb-0"
+                          : ""
+                      }`}
+                    >
+                      <h3
+                        className={`font-semibold ${
+                          isCompleted
+                            ? "text-slate-900"
+                            : "text-slate-400"
+                        }`}
+                      >
+                        {step.label}
+                      </h3>
+
+                      <p
+                        className={`mt-1 text-sm ${
+                          isCompleted
+                            ? "text-slate-500"
+                            : "text-slate-400"
+                        }`}
+                      >
+                        {step.description}
+                      </p>
+
+                      {isCurrent && (
+                        <span className="mt-2 inline-block text-xs font-semibold uppercase tracking-wide text-emerald-600">
+                          Current status
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              }
+            )}
+          </div>
         </div>
 
         <div className="grid gap-8 lg:grid-cols-3">
 
-          {/* ============================= */}
+          {/* -------------------------------- */}
           {/* ORDER ITEMS */}
-          {/* ============================= */}
+          {/* -------------------------------- */}
 
           <div className="lg:col-span-2">
             <div className="rounded-3xl bg-white p-8 shadow-sm">
@@ -130,7 +308,8 @@ const OrderDetails = () => {
 
                 {items.length === 0 ? (
                   <p className="text-slate-500">
-                    No items found for this order.
+                    No items found for this
+                    order.
                   </p>
                 ) : (
                   items.map((item) => (
@@ -141,11 +320,16 @@ const OrderDetails = () => {
 
                       {/* Product Image */}
                       <div className="shrink-0">
-                        {item.products?.image ? (
+                        {item.products
+                          ?.image ? (
                           <img
-                            src={item.products.image}
+                            src={
+                              item.products
+                                .image
+                            }
                             alt={
-                              item.products?.name ||
+                              item.products
+                                ?.name ||
                               "Product"
                             }
                             className="h-24 w-24 rounded-2xl object-cover"
@@ -159,14 +343,15 @@ const OrderDetails = () => {
 
                       {/* Product Information */}
                       <div className="flex-1">
-
                         <h3 className="text-lg font-semibold text-slate-900">
-                          {item.products?.name ||
+                          {item.products
+                            ?.name ||
                             `Product #${item.product_id}`}
                         </h3>
 
                         <p className="mt-1 text-sm text-slate-500">
-                          Quantity: {item.quantity}
+                          Quantity:{" "}
+                          {item.quantity}
                         </p>
 
                         <p className="mt-1 text-sm text-slate-500">
@@ -195,9 +380,9 @@ const OrderDetails = () => {
             </div>
           </div>
 
-          {/* ============================= */}
+          {/* -------------------------------- */}
           {/* ORDER SUMMARY */}
-          {/* ============================= */}
+          {/* -------------------------------- */}
 
           <div>
             <div className="rounded-3xl bg-white p-8 shadow-sm">
@@ -226,7 +411,7 @@ const OrderDetails = () => {
                   </p>
 
                   <span className="mt-1 inline-block rounded-full bg-blue-100 px-3 py-1 text-sm font-semibold capitalize text-blue-700">
-                    {order.order_status || "pending"}
+                    {currentStatus}
                   </span>
                 </div>
 

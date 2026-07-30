@@ -39,6 +39,17 @@ const OrderReview = () => {
       toast.error("Your cart is empty.");
       return;
     }
+console.log("CART ITEMS:", cartItems);
+
+console.log(
+  "PRODUCT IDS:",
+  cartItems.map((item) => ({
+    id: item.id,
+    name: item.name,
+    quantity: item.quantity,
+    price: item.price,
+  }))
+);
 
     initializePayment({
       email: checkoutData.email,
@@ -50,6 +61,11 @@ const OrderReview = () => {
           toast.loading("Processing your order...", {
             id: "order-processing",
           });
+
+          console.log("=== ORDER CHECK ===");
+console.log("Cart items:", cartItems);
+console.log("Cart item IDs:", cartItems.map((item) => item.id));
+console.log("Cart item names:", cartItems.map((item) => item.name));
 
           const orderId = await createPaidOrder({
             userId: user.id,
@@ -75,9 +91,9 @@ const OrderReview = () => {
           navigate(`/orders/${orderId}`);
         } catch (error) {
           console.error(
-            "Order creation failed:",
-            error
-          );
+  "Order creation failed:",
+  JSON.stringify(error, null, 2)
+);
 
           toast.error(
             error.message ||

@@ -83,17 +83,31 @@ export const createPaidOrder = async ({
       p_total_amount: totalAmount,
       p_payment_reference: paymentReference,
 
-      p_delivery_address: checkoutData.address,
-      p_delivery_state: checkoutData.state,
-      p_delivery_city: checkoutData.city,
-      p_phone: checkoutData.phone,
-      p_notes: checkoutData.notes || null,
+      p_delivery_address:
+        checkoutData.address,
+
+      p_delivery_state:
+        checkoutData.state,
+
+      p_delivery_city:
+        checkoutData.city,
+
+      p_phone:
+        checkoutData.phone,
+
+      p_notes:
+        checkoutData.notes || null,
 
       p_items: items,
     }
   );
 
   if (error) {
+   console.error(
+  "create_paid_order error:",
+  JSON.stringify(error, null, 2)
+);
+
     throw error;
   }
 
