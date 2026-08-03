@@ -38,6 +38,7 @@ import FarmerDashboard from "./pages/farmer/FarmerDashboard";
 import FarmerOrders from "./pages/farmer/FarmerOrders";
 import FarmerProducts from "./pages/farmer/MyProducts";
 import AddProduct from "./pages/farmer/AddProduct";
+import FarmProfile from "./pages/farmer/FarmProfile";
 
 /* =========================================
    AUTHENTICATION
@@ -45,6 +46,11 @@ import AddProduct from "./pages/farmer/AddProduct";
 import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Register";
 
+
+/* =========================================
+   ADMIN
+========================================= */
+import AdminFarmers from "./pages/admin/Farmers";
 
 const App = () => {
   return (
@@ -161,6 +167,15 @@ const App = () => {
             element={<FarmerProducts />}
           />
 
+            {/* =========================================
+              FARMER PROFILE
+          ========================================= */}
+
+          <Route
+            path="/farmer/profile"
+            element={<FarmProfile />}
+          />
+
 
           {/* =========================================
               ADD FARMER PRODUCT
@@ -190,6 +205,15 @@ const App = () => {
         <Route
           path="/auth/signup"
           element={<Signup />}
+        />
+
+        {/* =========================================
+              ADMIN
+          ========================================= */}
+
+        <Route
+          path="/admin/farmers"
+          element={<AdminFarmers />}
         />
 
       </Routes>

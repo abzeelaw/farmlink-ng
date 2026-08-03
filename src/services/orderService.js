@@ -1,9 +1,8 @@
-
 import { supabase } from "../lib/supabase";
 
-/* =========================================
+/* =========================================================
    CREATE ORDER
-========================================= */
+========================================================= */
 
 export const createOrder = async ({
   userId,
@@ -11,11 +10,15 @@ export const createOrder = async ({
   paymentReference,
   checkoutData,
 }) => {
+  if (!userId) {
+    throw new Error("User ID is required.");
+  }
+
   const { data, error } = await supabase
     .from("orders")
     .insert({
       buyer_id: userId,
-      total_amount: totalAmount,
+      total_amount: Number(totalAmount),
       payment_reference: paymentReference,
       payment_status: "paid",
       order_status: "pending",
@@ -36,21 +39,32 @@ export const createOrder = async ({
 };
 
 
-/* =========================================
+/* =========================================================
    CREATE ORDER ITEMS
-========================================= */
+========================================================= */
 
 export const createOrderItems = async (
   orderId,
   cartItems
 ) => {
+  if (!orderId) {
+    throw new Error("Order ID is required.");
+  }
+
+  if (!cartItems || cartItems.length === 0) {
+    throw new Error(
+      "Cannot create order items from an empty cart."
+    );
+  }
+
   const items = cartItems.map((item) => ({
     order_id: orderId,
     product_id: item.id,
     quantity: Number(item.quantity),
     unit_price: Number(item.price),
     subtotal:
-      Number(item.price) * Number(item.quantity),
+      Number(item.price) *
+      Number(item.quantity),
   }));
 
   const { data, error } = await supabase
@@ -66,9 +80,9 @@ export const createOrderItems = async (
 };
 
 
-/* =========================================
-   GET CUSTOMER ORDERS
-========================================= */
+/* =========================================================
+   GET BUYER ORDERS
+========================================================= */
 
 export const getBuyerOrders = async (userId) => {
   if (!userId) {
@@ -91,9 +105,9 @@ export const getBuyerOrders = async (userId) => {
 };
 
 
-/* =========================================
-   GET SINGLE CUSTOMER ORDER
-========================================= */
+/* =========================================================
+   GET SINGLE ORDER
+========================================================= */
 
 export const getOrderById = async (orderId) => {
   if (!orderId) {
@@ -114,9 +128,9 @@ export const getOrderById = async (orderId) => {
 };
 
 
-/* =========================================
+/* =========================================================
    GET ORDER ITEMS
-========================================= */
+========================================================= */
 
 export const getOrderItems = async (orderId) => {
   if (!orderId) {
@@ -151,139 +165,270 @@ export const getOrderItems = async (orderId) => {
 };
 
 
-/* =========================================
+/* =========================================================
    GET FARMER ORDERS
-   -----------------------------------------
+   ---------------------------------------------------------
    IMPORTANT:
-   Only farmer_orders belonging to the
-   logged-in farmer are returned.
-========================================= */
+   This function returns a FLAT structure.
 
-export const getFarmerOrders = async (farmerId) => {
+   Each returned item contains:
+
+   FARMER ORDER:
+   - farmer_order_id
+   - farmer_id
+   - status
+   - farmer_amount
+   - platform_fee
+   - payout_status
+
+   MASTER ORDER:
+   - order_id
+   - buyer_id
+   - total_amount
+   - payment_status
+   - order_status
+   - delivery_address
+   - delivery_state
+   - delivery_city
+   - phone
+   - notes
+
+   PRODUCT:
+   - order_item_id
+   - product_id
+   - quantity
+   - unit_price
+   - subtotal
+   - product_name
+   - product_image
+   - product_price
+========================================================= */
+
+export const getFarmerOrders = async (
+  farmerId
+) => {
   if (!farmerId) {
-    throw new Error("Farmer ID is required.");
+    throw new Error(
+      "Farmer ID is required."
+    );
   }
 
-  /*
-    First get ONLY this farmer's
-    farmer_orders records.
-  */
+  const { data, error } = await supabase
+    .from("farmer_orders")
+    .select(`
+      id,
+      order_id,
+      farmer_id,
+      status,
+      farmer_amount,
+      platform_fee,
+      payout_status,
+      created_at,
 
-  const { data: farmerOrders, error } =
-    await supabase
-      .from("farmer_orders")
-      .select(`
+      orders (
         id,
-        order_id,
-        farmer_id,
-        subtotal,
-        platform_fee,
-        farmer_amount,
-        status,
-        payout_status,
+        buyer_id,
+        total_amount,
+        payment_reference,
+        payment_status,
+        order_status,
+        delivery_address,
+        delivery_state,
+        delivery_city,
+        phone,
+        notes,
         created_at,
 
-        orders (
+        order_items (
           id,
-          buyer_id,
-          total_amount,
-          payment_reference,
-          payment_status,
-          order_status,
-          delivery_address,
-          delivery_state,
-          delivery_city,
-          phone,
-          notes,
-          created_at
+          order_id,
+          product_id,
+          quantity,
+          unit_price,
+          subtotal,
+
+          products (
+            id,
+            name,
+            image,
+            price,
+            farmer_id
+          )
         )
-      `)
-      .eq("farmer_id", farmerId)
-      .order("created_at", {
-        ascending: false,
-      });
+      )
+    `)
+    .eq("farmer_id", farmerId)
+    .order("created_at", {
+      ascending: false,
+    });
 
   if (error) {
+    console.error(
+      "GET FARMER ORDERS ERROR:",
+      error
+    );
+
     throw error;
   }
 
-  if (!farmerOrders || farmerOrders.length === 0) {
-    return [];
-  }
+  const flattenedOrders = [];
 
   /*
-    For each farmer order, retrieve ONLY the
-    order items whose products belong to this
-    farmer.
+    Convert the nested Supabase response
+    into a flat structure.
   */
 
-  const ordersWithItems = await Promise.all(
-    farmerOrders.map(async (farmerOrder) => {
-      const { data: items, error: itemsError } =
-        await supabase
-          .from("order_items")
-          .select(`
-            id,
-            order_id,
-            product_id,
-            quantity,
-            unit_price,
-            subtotal,
+  for (const farmerOrder of data || []) {
+    const order = farmerOrder.orders;
 
-            products (
-              id,
-              name,
-              image,
-              farmer_id,
-              price
-            )
-          `)
-          .eq("order_id", farmerOrder.order_id);
+    if (!order) {
+      continue;
+    }
 
-      if (itemsError) {
-        throw itemsError;
-      }
+    /*
+      Only include products belonging
+      to this farmer.
+    */
 
-      /*
-        IMPORTANT:
-        Only products belonging to the logged-in
-        farmer are allowed into this order.
-      */
-
-      const farmerItems = (items || []).filter(
+    const farmerItems =
+      (order.order_items || []).filter(
         (item) =>
-          item.products?.farmer_id === farmerId
+          item.products?.farmer_id ===
+          farmerId
       );
 
-      return {
-        ...farmerOrder,
+    for (const item of farmerItems) {
+      flattenedOrders.push({
+        /* ================================
+           FARMER ORDER
+        ================================= */
 
-        /*
-          Keep the farmer-specific order status.
-        */
-        status: farmerOrder.status,
+        farmer_order_id:
+          farmerOrder.id,
 
-        /*
-          Only this farmer's products.
-        */
-        items: farmerItems,
-      };
-    })
+        farmer_id:
+          farmerOrder.farmer_id,
+
+        status:
+          farmerOrder.status,
+
+        farmer_amount:
+          farmerOrder.farmer_amount,
+
+        platform_fee:
+          farmerOrder.platform_fee,
+
+        payout_status:
+          farmerOrder.payout_status,
+
+        farmer_order_created_at:
+          farmerOrder.created_at,
+
+
+        /* ================================
+           MASTER ORDER
+        ================================= */
+
+        order_id:
+          order.id,
+
+        buyer_id:
+          order.buyer_id,
+
+        total_amount:
+          order.total_amount,
+
+        payment_reference:
+          order.payment_reference,
+
+        payment_status:
+          order.payment_status,
+
+        order_status:
+          order.order_status,
+
+        delivery_address:
+          order.delivery_address,
+
+        delivery_state:
+          order.delivery_state,
+
+        delivery_city:
+          order.delivery_city,
+
+        phone:
+          order.phone,
+
+        notes:
+          order.notes,
+
+        order_created_at:
+          order.created_at,
+
+
+        /* ================================
+           ORDER ITEM
+        ================================= */
+
+        order_item_id:
+          item.id,
+
+        product_id:
+          item.product_id,
+
+        quantity:
+          item.quantity,
+
+        unit_price:
+          item.unit_price,
+
+        subtotal:
+          item.subtotal,
+
+
+        /* ================================
+           PRODUCT
+        ================================= */
+
+        product_name:
+          item.products?.name ||
+          "Product",
+
+        product_image:
+          item.products?.image ||
+          "",
+
+        product_price:
+          item.products?.price ||
+          0,
+
+        product_farmer_id:
+          item.products?.farmer_id,
+      });
+    }
+  }
+
+  console.log(
+    "FARMER ORDERS:",
+    flattenedOrders
   );
 
-  return ordersWithItems;
+  return flattenedOrders;
 };
 
 
-/* =========================================
+/* =========================================================
    UPDATE FARMER ORDER STATUS
-   -----------------------------------------
-   Updates ONLY farmer_orders.status.
-   Does NOT modify the master orders table.
-========================================= */
 
-export const updateOrderStatus = async (
+   IMPORTANT:
+   This updates farmer_orders.status.
+
+   It does NOT update the master orders.order_status.
+========================================================= */
+
+export const updateFarmerOrderStatus = async (
   farmerOrderId,
+  farmerId,
   status
 ) => {
   if (!farmerOrderId) {
@@ -292,8 +437,16 @@ export const updateOrderStatus = async (
     );
   }
 
+  if (!farmerId) {
+    throw new Error(
+      "Farmer ID is required."
+    );
+  }
+
   if (!status) {
-    throw new Error("Order status is required.");
+    throw new Error(
+      "Order status is required."
+    );
   }
 
   const allowedStatuses = [
@@ -301,6 +454,7 @@ export const updateOrderStatus = async (
     "processing",
     "ready",
     "shipped",
+    "out_for_delivery",
     "delivered",
     "cancelled",
   ];
@@ -317,6 +471,58 @@ export const updateOrderStatus = async (
       status,
     })
     .eq("id", farmerOrderId)
+    .eq("farmer_id", farmerId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error(
+      "UPDATE FARMER ORDER STATUS ERROR:",
+      error
+    );
+
+    throw error;
+  }
+
+  return data;
+};
+
+
+/* =========================================================
+   UPDATE FARMER PAYOUT STATUS
+========================================================= */
+
+export const updateFarmerPayoutStatus = async (
+  farmerOrderId,
+  farmerId,
+  payoutStatus
+) => {
+  if (!farmerOrderId || !farmerId) {
+    throw new Error(
+      "Farmer order ID and farmer ID are required."
+    );
+  }
+
+  const allowedStatuses = [
+    "pending",
+    "processing",
+    "paid",
+    "failed",
+  ];
+
+  if (!allowedStatuses.includes(payoutStatus)) {
+    throw new Error(
+      `Invalid payout status: ${payoutStatus}`
+    );
+  }
+
+  const { data, error } = await supabase
+    .from("farmer_orders")
+    .update({
+      payout_status: payoutStatus,
+    })
+    .eq("id", farmerOrderId)
+    .eq("farmer_id", farmerId)
     .select()
     .single();
 
@@ -328,22 +534,14 @@ export const updateOrderStatus = async (
 };
 
 
-/* =========================================
+/* =========================================================
    CREATE PAID ORDER
-   -----------------------------------------
+   ---------------------------------------------------------
    Multi-Farmer Checkout
 
-   The RPC function:
-   create_paid_order()
-
-   handles:
-
-   1. Master order
-   2. Order items
-   3. Stock reduction
-   4. Farmer orders
-   5. 2% platform commission
-========================================= */
+   Uses Supabase RPC:
+   create_paid_order
+========================================================= */
 
 export const createPaidOrder = async ({
   userId,
@@ -353,21 +551,19 @@ export const createPaidOrder = async ({
   cartItems,
 }) => {
   if (!userId) {
-    throw new Error("User ID is required.");
+    throw new Error(
+      "User ID is required."
+    );
   }
 
-  if (!cartItems || cartItems.length === 0) {
+  if (
+    !cartItems ||
+    cartItems.length === 0
+  ) {
     throw new Error(
       "Cannot create an order with an empty cart."
     );
   }
-
-  /*
-    Convert cart items into the exact structure
-    expected by the Supabase RPC function.
-
-    Product IDs MUST be UUIDs.
-  */
 
   const items = cartItems.map((item) => ({
     product_id: item.id,
@@ -375,35 +571,36 @@ export const createPaidOrder = async ({
     unit_price: Number(item.price),
   }));
 
-  const { data, error } = await supabase.rpc(
-    "create_paid_order",
-    {
-      p_buyer_id: userId,
+  const { data, error } =
+    await supabase.rpc(
+      "create_paid_order",
+      {
+        p_buyer_id: userId,
 
-      p_total_amount:
-        Number(totalAmount),
+        p_total_amount:
+          Number(totalAmount),
 
-      p_payment_reference:
-        paymentReference,
+        p_payment_reference:
+          paymentReference,
 
-      p_delivery_address:
-        checkoutData.address,
+        p_delivery_address:
+          checkoutData.address,
 
-      p_delivery_state:
-        checkoutData.state,
+        p_delivery_state:
+          checkoutData.state,
 
-      p_delivery_city:
-        checkoutData.city,
+        p_delivery_city:
+          checkoutData.city,
 
-      p_phone:
-        checkoutData.phone,
+        p_phone:
+          checkoutData.phone,
 
-      p_notes:
-        checkoutData.notes || null,
+        p_notes:
+          checkoutData.notes || null,
 
-      p_items: items,
-    }
-  );
+        p_items: items,
+      }
+    );
 
   if (error) {
     console.error(
