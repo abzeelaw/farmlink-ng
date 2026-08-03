@@ -4,14 +4,16 @@ import HeroImage from "./hero/HeroImage";
 
 const Hero = () => {
   return (
-    <section className="relative overflow-hidden section-padding">
-      <BackgroundShapes />
+    <section className="relative overflow-hidden">
+  <BackgroundShapes />
 
-      <div className="container-width grid items-center gap-16 lg:grid-cols-2">
-        <HeroContent />
-        <HeroImage />
-      </div>
-    </section>
+  <div className="container-width relative">
+    <div className="grid items-center gap-10 py-16 md:gap-12 md:py-20 lg:grid-cols-2 lg:gap-16 lg:py-28">
+      <HeroContent />
+      <HeroImage />
+    </div>
+  </div>
+</section>
   );
 };
 

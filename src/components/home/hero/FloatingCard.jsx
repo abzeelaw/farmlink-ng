@@ -1,3 +1,4 @@
+
 import { Star } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -9,32 +10,32 @@ const FloatingCard = ({
 }) => {
   return (
     <motion.div
-      animate={{ y: [0, -10, 0] }}
+      animate={{ y: [0, -8, 0] }}
       transition={{
         duration: 4,
         repeat: Infinity,
         ease: "easeInOut",
       }}
-      className={`absolute w-52 rounded-2xl bg-white p-4 shadow-xl ${className}`}
+      className={`absolute z-10 w-28 rounded-xl bg-white p-2 shadow-lg sm:w-32 sm:p-2.5 md:w-36 md:rounded-2xl md:p-3 ${className}`}
     >
       <img
         src={image}
         alt={title}
-        className="h-28 w-full rounded-xl object-cover"
+        className="h-16 w-full rounded-lg object-cover sm:h-18 md:h-20"
       />
 
-      <h3 className="mt-3 font-semibold">
+      <h3 className="mt-1.5 truncate text-xs font-semibold sm:mt-2 sm:text-sm">
         {title}
       </h3>
 
-      <div className="mt-2 flex items-center justify-between">
-        <span className="font-bold text-emerald-600">
+      <div className="mt-1 flex items-center justify-between gap-1">
+        <span className="text-xs font-bold text-emerald-600">
           {price}
         </span>
 
-        <span className="flex items-center gap-1 text-sm">
+        <span className="flex items-center gap-0.5 text-[10px] sm:text-xs">
           <Star
-            size={14}
+            size={10}
             className="fill-yellow-400 text-yellow-400"
           />
           4.9
