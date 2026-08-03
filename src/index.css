@@ -1,29 +1,34 @@
 @import "tailwindcss";
 
-/* ---------- Base ---------- */
+/* =========================================
+   BASE
+========================================= */
 
 html {
   scroll-behavior: smooth;
 }
 
 body {
+  margin: 0;
+  min-width: 320px;
   font-family: "Poppins", sans-serif;
   background-color: #f8fafc;
   color: #0f172a;
 }
 
-* {
-  margin: 10;
-  padding: 10;
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
-/* ---------- Reusable Utilities ---------- */
+/* =========================================
+   REUSABLE UTILITIES
+========================================= */
 
 @layer utilities {
-
   .container-width {
-    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
   }
 
   .section-padding {
@@ -31,15 +36,15 @@ body {
   }
 
   .heading-xl {
-    @apply text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight;
+    @apply text-4xl font-extrabold leading-tight md:text-5xl lg:text-6xl;
   }
 
   .heading-lg {
-    @apply text-3xl md:text-4xl font-bold;
+    @apply text-3xl font-bold md:text-4xl;
   }
 
   .text-muted {
-    @apply text-slate-600 leading-8;
+    @apply leading-8 text-slate-600;
   }
 
   .card-shadow {
@@ -49,5 +54,4 @@ body {
   .glass {
     @apply bg-white/70 backdrop-blur-xl;
   }
-
 }
