@@ -203,7 +203,7 @@ const App = () => {
         />
 
         <Route
-          path="/auth/signup"
+          path="/auth/register"
           element={<Signup />}
         />
 
