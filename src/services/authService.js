@@ -24,7 +24,7 @@ export const signUp = async ({
     const userId = data?.user?.id;
 
     if (userId) {
-      await supabase.from("profiles").upsert(
+      const { error: upsertError } = await supabase.from("profiles").upsert(
         {
           id: userId,
           full_name: fullName,
@@ -36,13 +36,14 @@ export const signUp = async ({
       );
 
       // Try to immediately sign the user in (if the auth settings allow it)
-      await supabase.auth.signInWithPassword({ email, password });
+      const signInResult = await supabase.auth.signInWithPassword({ email, password });
+
+      return { data, error, upsertError, signInResult };
     }
   } catch (e) {
-    // ignore profile upsert/signin errors here; caller will handle signUp error
     console.error("Post-signup profile upsert error:", e.message || e);
+    return { data, error, upsertError: e };
   }
-
   return { data, error };
 };
 

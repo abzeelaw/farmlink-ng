@@ -48,7 +48,7 @@ const Register = () => {
   });
 
   const onSubmit = async (values) => {
-    const { error } = await signUp({
+    const res = await signUp({
       fullName: values.fullName,
       email: values.email,
       phone: values.phone,
@@ -56,14 +56,29 @@ const Register = () => {
       role: values.role,
     });
 
+    const { error, upsertError, signInResult } = res || {};
+
     if (error) {
-      toast.error(error.message);
+      toast.error(error.message || "Unable to create account");
       return;
     }
 
-    toast.success("Account created successfully.");
+    if (upsertError) {
+      console.error("Profile upsert error:", upsertError);
+      toast.error("Account created but profile could not be created. Contact support.");
+      navigate("/auth/login");
+      return;
+    }
 
-    // If sign-in succeeded in the service, navigate to home; otherwise go to login
+    if (signInResult?.error) {
+      // Sign up succeeded but sign-in failed (likely email confirmation required)
+      toast.success("Account created. Please confirm your email before login.");
+      navigate("/auth/login");
+      return;
+    }
+
+    // Signed in successfully
+    toast.success("Account created and signed in.");
     navigate("/");
   };
 
