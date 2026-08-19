@@ -23,12 +23,15 @@ import Cart from "../pages/cart/Cart";
 import Checkout from "../pages/checkout/Checkout";
 import ProtectedRoute from "../components/auth/ProtectedRoute";
 import AddProduct from "../pages/farmer/AddProduct";
+import FarmProfile from "../pages/farmer/FarmProfile";
 import MyOrders from "../pages/orders/MyOrders";
 import OrderDetails from "../pages/orders/OrderDetails";
 import FarmerOrders from "../pages/farmer/FarmerOrders";
 import FarmerDashboard from "../pages/farmer/FarmerDashboard";
 import MyProducts from "../pages/farmer/MyProducts";
 import EditProduct from "../pages/farmer/EditProduct";
+import RoleProtectedRoute from "../components/auth/RoleProtectedRoute";
+import AdminFarmers from "../pages/admin/Farmers";
 
 
 const router = createBrowserRouter([
@@ -126,6 +129,10 @@ const router = createBrowserRouter([
       element: <AddProduct />,
     },
     {
+      path: "profile",
+      element: <FarmProfile />,
+    },
+    {
   path: "orders",
   element: <FarmerOrders />,
 },
@@ -147,7 +154,16 @@ const router = createBrowserRouter([
   {
     path: "/admin",
     element: <DashboardLayout />,
-    children: [],
+    children: [
+      {
+        path: "farmers",
+        element: (
+          <RoleProtectedRoute role="admin">
+            <AdminFarmers />
+          </RoleProtectedRoute>
+        ),
+      },
+    ],
   },
 ]);
 

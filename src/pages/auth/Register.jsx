@@ -56,6 +56,8 @@ const Register = () => {
       role: values.role,
     });
 
+    console.debug('Register result:', res);
+
     const { error, upsertError, signInResult } = res || {};
 
     if (error) {

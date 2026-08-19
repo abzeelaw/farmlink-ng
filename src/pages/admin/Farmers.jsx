@@ -12,14 +12,15 @@ import { supabase } from "../../lib/supabase";
 
 const Farmers = () => {
   const [farmers, setFarmers] = useState([]);
+  const [view, setView] = useState('pending'); // 'pending' or 'all'
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
 
-  const fetchPendingFarmers = async () => {
+  const fetchFarmers = async (mode = 'pending') => {
     try {
       setLoading(true);
 
-      const { data, error } = await supabase
+      const query = supabase
         .from("profiles")
         .select(`
           id,
@@ -38,11 +39,13 @@ const Farmers = () => {
           total_sales,
           created_at
         `)
-        .eq("role", "farmer")
-        .eq("verification_status", "pending")
-        .order("created_at", {
-          ascending: false,
-        });
+        .eq("role", "farmer");
+
+      if (mode === 'pending') {
+        query.eq('verification_status', 'pending');
+      }
+
+      const { data, error } = await query.order("created_at", { ascending: false });
 
       if (error) {
         throw error;
@@ -50,15 +53,9 @@ const Farmers = () => {
 
       setFarmers(data || []);
     } catch (error) {
-      console.error(
-        "FETCH PENDING FARMERS ERROR:",
-        error
-      );
+      console.error("FETCH FARMERS ERROR:", error);
 
-      toast.error(
-        error.message ||
-          "Unable to load pending farmers."
-      );
+      toast.error(error.message || "Unable to load farmers.");
     } finally {
       setLoading(false);
     }
@@ -66,7 +63,7 @@ const Farmers = () => {
 
   useEffect(() => {
     const run = async () => {
-      await fetchPendingFarmers();
+      await fetchFarmers(view);
     };
 
     run();
@@ -98,11 +95,8 @@ const Farmers = () => {
       );
 
       // Remove the farmer from pending list
-      setFarmers((previousFarmers) =>
-        previousFarmers.filter(
-          (farmer) => farmer.id !== farmerId
-        )
-      );
+      // Refresh the list
+      await fetchFarmers(view);
     } catch (error) {
       console.error(
         "UPDATE FARMER STATUS ERROR:",
@@ -159,6 +153,26 @@ const Farmers = () => {
       </div>
 
       {/* Empty State */}
+      <div className="mb-6 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => { setView('pending'); fetchFarmers('pending'); }}
+            className={`rounded-xl px-4 py-2 ${view === 'pending' ? 'bg-emerald-600 text-white' : 'bg-white border'}`}
+          >
+            Pending
+          </button>
+
+          <button
+            onClick={() => { setView('all'); fetchFarmers('all'); }}
+            className={`rounded-xl px-4 py-2 ${view === 'all' ? 'bg-emerald-600 text-white' : 'bg-white border'}`}
+          >
+            All Farmers
+          </button>
+        </div>
+
+        <div className="text-sm text-slate-500">Showing: {view === 'pending' ? 'Pending verifications' : 'All farmers'}</div>
+      </div>
+
       {farmers.length === 0 ? (
         <div className="rounded-3xl border border-slate-200 bg-white p-12 text-center shadow-sm">
           <BadgeCheck

@@ -16,7 +16,7 @@ import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../lib/supabase";
 
 const UserMenu = () => {
-  const { user, profile } = useAuth();
+  const { user, profile, loading } = useAuth();
   const navigate = useNavigate();
 
   const [open, setOpen] = useState(false);
@@ -101,10 +101,10 @@ const UserMenu = () => {
      LOGGED-IN USER
   ========================================= */
 
-  const role =
-    profile?.role?.toLowerCase() || "buyer";
+  const role = profile?.role?.toLowerCase();
 
   const isFarmer = role === "farmer";
+  const isAdmin = role === "admin";
 
   const displayName =
     profile?.full_name ||
@@ -134,7 +134,7 @@ const UserMenu = () => {
           </p>
 
           <p className="text-xs font-medium capitalize text-emerald-600">
-            {role}
+            {loading ? 'Loading...' : (role || 'buyer')}
           </p>
         </div>
 
@@ -162,14 +162,29 @@ const UserMenu = () => {
             </p>
 
             <span className="mt-2 inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold capitalize text-emerald-700">
-              {role}
+              {loading ? 'Loading...' : (role || 'buyer')}
             </span>
 
           </div>
 
           {/* FARMER LINKS */}
 
-          {isFarmer && (
+          {isAdmin && !loading && (
+            <>
+              <Link
+                to="/admin/farmers"
+                onClick={() => setOpen(false)}
+                className="mt-2 flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-slate-700 hover:bg-emerald-50 hover:text-emerald-600"
+              >
+                <LayoutDashboard size={18} />
+
+                Admin Dashboard
+              </Link>
+
+            </>
+          )}
+
+          {isFarmer && !loading && (
             <>
               <Link
                 to="/farmer/dashboard"

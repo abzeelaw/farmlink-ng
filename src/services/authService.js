@@ -24,18 +24,20 @@ export const signUp = async ({
     const userId = data?.user?.id;
 
     if (userId) {
+      const verification_status = role === "farmer" ? "pending" : "verified";
+
       const { error: upsertError } = await supabase.from("profiles").upsert(
         {
           id: userId,
           full_name: fullName,
           phone,
           role,
-          verification_status: "verified",
+          verification_status,
         },
         { returning: "minimal" }
       );
 
-      // Try to immediately sign the user in (if the auth settings allow it)
+      // Try to immediately sign the user in (so farmers can access their dashboard/profile to update details)
       const signInResult = await supabase.auth.signInWithPassword({ email, password });
 
       return { data, error, upsertError, signInResult };
