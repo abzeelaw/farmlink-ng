@@ -65,7 +65,11 @@ const FarmerOrders = () => {
 
 
   useEffect(() => {
-    loadOrders();
+    const run = async () => {
+      await loadOrders();
+    };
+
+    run();
   }, [user]);
 
 
@@ -220,7 +224,7 @@ const FarmerOrders = () => {
             {orders.map((order) => (
 
               <div
-                key={order.order_item_id}
+                key={order.farmer_order_id}
                 className="overflow-hidden rounded-3xl bg-white shadow-sm"
               >
 
@@ -585,108 +589,57 @@ const FarmerOrders = () => {
 
                   <div className="rounded-2xl border border-slate-100 p-5">
 
-                    <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+                    <div className="space-y-4">
 
-                      {/* PRODUCT */}
+                      {order.items && order.items.length > 0 ? (
+                        order.items.map((item) => (
+                          <div
+                            key={item.order_item_id}
+                            className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between"
+                          >
+                            <div className="flex items-center gap-4">
+                              {item.product_image ? (
+                                <img
+                                  src={item.product_image}
+                                  alt={item.product_name || "Product"}
+                                  className="h-24 w-24 rounded-2xl object-cover"
+                                />
+                              ) : (
+                                <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-slate-100">
+                                  <Package size={32} className="text-slate-400" />
+                                </div>
+                              )}
 
-                      <div className="flex items-center gap-4">
+                              <div>
+                                <h4 className="text-lg font-bold text-slate-900">
+                                  {item.product_name || "Product"}
+                                </h4>
 
-                        {order.product_image ? (
+                                <p className="mt-1 text-xs text-slate-400">Product ID</p>
 
-                          <img
-                            src={order.product_image}
-                            alt={
-                              order.product_name ||
-                              "Product"
-                            }
-                            className="h-24 w-24 rounded-2xl object-cover"
-                          />
+                                <p className="max-w-xs break-all text-xs text-slate-500">{item.product_id}</p>
+                              </div>
+                            </div>
 
-                        ) : (
+                            <div>
+                              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Quantity</p>
+                              <p className="mt-1 text-lg font-bold text-slate-900">{item.quantity}</p>
+                            </div>
 
-                          <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-slate-100">
+                            <div>
+                              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Unit Price</p>
+                              <p className="mt-1 text-lg font-bold text-slate-900">₦{Number(item.unit_price || 0).toLocaleString()}</p>
+                            </div>
 
-                            <Package
-                              size={32}
-                              className="text-slate-400"
-                            />
-
+                            <div>
+                              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Subtotal</p>
+                              <p className="mt-1 text-xl font-bold text-emerald-600">₦{Number(item.subtotal || 0).toLocaleString()}</p>
+                            </div>
                           </div>
-
-                        )}
-
-
-                        <div>
-
-                          <h4 className="text-lg font-bold text-slate-900">
-                            {order.product_name ||
-                              "Product"}
-                          </h4>
-
-                          <p className="mt-1 text-xs text-slate-400">
-                            Product ID
-                          </p>
-
-                          <p className="max-w-xs break-all text-xs text-slate-500">
-                            {order.product_id}
-                          </p>
-
-                        </div>
-
-                      </div>
-
-
-                      {/* QUANTITY */}
-
-                      <div>
-
-                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                          Quantity
-                        </p>
-
-                        <p className="mt-1 text-lg font-bold text-slate-900">
-                          {order.quantity}
-                        </p>
-
-                      </div>
-
-
-                      {/* UNIT PRICE */}
-
-                      <div>
-
-                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                          Unit Price
-                        </p>
-
-                        <p className="mt-1 text-lg font-bold text-slate-900">
-                          ₦
-                          {Number(
-                            order.unit_price ||
-                              0
-                          ).toLocaleString()}
-                        </p>
-
-                      </div>
-
-
-                      {/* SUBTOTAL */}
-
-                      <div>
-
-                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                          Subtotal
-                        </p>
-
-                        <p className="mt-1 text-xl font-bold text-emerald-600">
-                          ₦
-                          {Number(
-                            order.subtotal ||
-                              0
-                          ).toLocaleString()}
-                        </p>
-
-                      </div>
+                        ))
+                      ) : (
+                        <div className="text-sm text-slate-500">No products found for this order.</div>
+                      )}
 
                     </div>
 

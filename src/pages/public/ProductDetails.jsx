@@ -5,16 +5,12 @@ import ProductGallery from "../../components/product/ProductGallery";
 import ProductInfo from "../../components/product/ProductInfo";
 import DeliveryInfo from "../../components/product/DeliveryInfo";
 
-import {
-  getProductById,
-  getRelatedProducts,
-} from "../../services/productService";
+import { getProductById } from "../../services/productService";
 
 const ProductDetails = () => {
   const { id } = useParams();
 
   const [product, setProduct] = useState(null);
-  const [relatedProducts, setRelatedProducts] = useState([]);
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
 
@@ -36,15 +32,6 @@ const ProductDetails = () => {
       };
 
       setProduct(formattedProduct);
-
-      const related = await getRelatedProducts(
-        data.category_id,
-        data.id
-      );
-
-      if (!related.error) {
-        setRelatedProducts(related.data);
-      }
 
       setLoading(false);
     };

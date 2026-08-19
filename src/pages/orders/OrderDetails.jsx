@@ -14,6 +14,7 @@ import {
   getOrderById,
   getOrderItems,
 } from "../../services/orderService";
+import { supabase } from "../../lib/supabase";
 
 const OrderDetails = () => {
   const { id } = useParams();
@@ -54,6 +55,35 @@ const OrderDetails = () => {
     };
 
     loadOrder();
+
+    // Subscribe to realtime updates for this master order so the
+    // buyer's view updates when farmers change statuses.
+    let channel;
+
+    if (id) {
+      channel = supabase
+        .channel(`orders:listen:${id}`)
+        .on(
+          "postgres_changes",
+          { event: "UPDATE", schema: "public", table: "orders", filter: `id=eq.${id}` },
+          (payload) => {
+            if (payload?.new) {
+              setOrder((current) => ({ ...current, ...payload.new }));
+            }
+          }
+        )
+        .subscribe();
+    }
+
+    return () => {
+      if (channel) {
+        try {
+          channel.unsubscribe();
+        } catch {
+          // ignore
+        }
+      }
+    };
   }, [id, user]);
 
   // -----------------------------------------

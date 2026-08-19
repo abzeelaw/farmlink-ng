@@ -65,7 +65,11 @@ const Farmers = () => {
   };
 
   useEffect(() => {
-    fetchPendingFarmers();
+    const run = async () => {
+      await fetchPendingFarmers();
+    };
+
+    run();
   }, []);
 
   const updateVerificationStatus = async (

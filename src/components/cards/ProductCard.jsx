@@ -48,11 +48,11 @@ const ProductCard = ({ product }) => {
       to={`/product/${product.id}`}
       className="block"
     >
-      <div className="group overflow-hidden rounded-3xl bg-white shadow-md transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
+      <div className="group overflow-hidden rounded-2xl bg-white shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
 
         {/* Product Image */}
 
-        <div className="h-56 overflow-hidden bg-slate-100">
+        <div className="h-40 overflow-hidden bg-slate-100">
           {product?.image ? (
             <img
               src={product.image}
@@ -68,17 +68,17 @@ const ProductCard = ({ product }) => {
 
         {/* Card Content */}
 
-        <div className="p-5">
+        <div className="p-4">
 
           {/* Category */}
 
-          <span className="inline-block rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
+          <span className="inline-block rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">
             {categoryName}
           </span>
 
           {/* Product Name */}
 
-          <h3 className="mt-4 line-clamp-1 text-xl font-bold text-slate-900">
+          <h3 className="mt-3 line-clamp-1 text-lg font-bold text-slate-900">
             {product.name}
           </h3>
 
@@ -103,7 +103,7 @@ const ProductCard = ({ product }) => {
 
           {/* Rating & Price */}
 
-          <div className="mt-4 flex items-center justify-between">
+          <div className="mt-3 flex items-center justify-between">
 
             <div className="flex items-center gap-1">
 
@@ -118,7 +118,7 @@ const ProductCard = ({ product }) => {
 
             </div>
 
-            <h4 className="text-2xl font-bold text-emerald-600">
+            <h4 className="text-xl font-bold text-emerald-600">
               ₦{price.toLocaleString()}
             </h4>
 
@@ -126,22 +126,13 @@ const ProductCard = ({ product }) => {
 
           {/* Buttons */}
 
-          <div className="mt-6 flex gap-3">
+          <div className="mt-4 flex gap-3">
 
-            <Button
-              variant="outline"
-              className="flex-1"
-            >
-              View Details
+            <Button variant="outline" className="px-3 py-2 text-sm">
+              View
             </Button>
 
-            <Button
-              className="flex-1"
-              leftIcon={
-                <ShoppingCart size={18} />
-              }
-              onClick={handleAddToCart}
-            >
+            <Button className="px-3 py-2 text-sm" leftIcon={<ShoppingCart size={16} />} onClick={handleAddToCart}>
               Add
             </Button>
 

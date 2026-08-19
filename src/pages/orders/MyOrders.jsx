@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 
 import { useAuth } from "../../context/AuthContext";
 import { getBuyerOrders } from "../../services/orderService";
+import { supabase } from "../../lib/supabase";
 
 const MyOrders = () => {
   const { user, loading: authLoading } = useAuth();
@@ -40,6 +41,37 @@ const MyOrders = () => {
     };
 
     loadOrders();
+
+    // Subscribe to updates on orders for this buyer so status updates
+    // are reflected in real time.
+    let channel;
+
+    if (user?.id) {
+      channel = supabase
+        .channel(`buyer_orders:${user.id}`)
+        .on(
+          "postgres_changes",
+          { event: "UPDATE", schema: "public", table: "orders", filter: `buyer_id=eq.${user.id}` },
+          (payload) => {
+            if (payload?.new) {
+              setOrders((current) =>
+                current.map((o) => (o.id === payload.new.id ? { ...o, ...payload.new } : o))
+              );
+            }
+          }
+        )
+        .subscribe();
+    }
+
+    return () => {
+      if (channel) {
+        try {
+          channel.unsubscribe();
+        } catch {
+          // ignore
+        }
+      }
+    };
   }, [user, authLoading]);
 
   if (authLoading || loading) {

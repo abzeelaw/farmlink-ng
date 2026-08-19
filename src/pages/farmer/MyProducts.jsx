@@ -44,9 +44,13 @@ const MyProducts = () => {
   };
 
   useEffect(() => {
-    if (!authLoading && user) {
-      fetchProducts();
-    }
+    const run = async () => {
+      if (!authLoading && user) {
+        await fetchProducts();
+      }
+    };
+
+    run();
   }, [user, authLoading]);
 
   // --------------------------------

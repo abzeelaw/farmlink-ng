@@ -148,11 +148,11 @@ const FeaturedProducts = () => {
 
         {/* Loading State */}
         {loading ? (
-          <div className="grid gap-8 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
             {[1, 2, 3, 4].map((item) => (
               <div
                 key={item}
-                className="h-80 animate-pulse rounded-3xl bg-white"
+                className="h-64 animate-pulse rounded-2xl bg-white"
               />
             ))}
           </div>

@@ -204,216 +204,175 @@ export const getOrderItems = async (orderId) => {
    - product_price
 ========================================================= */
 
-export const getFarmerOrders = async (
-  farmerId
-) => {
+/* =========================================================
+   GET FARMER ORDERS
+   ---------------------------------------------------------
+   Uses separate queries instead of relying on nested
+   Supabase relationships.
+========================================================= */
+
+export const getFarmerOrders = async (farmerId) => {
   if (!farmerId) {
-    throw new Error(
-      "Farmer ID is required."
-    );
+    throw new Error("Farmer ID is required.");
   }
 
-  const { data, error } = await supabase
+  console.log("=================================");
+  console.log("GET FARMER ORDERS");
+  console.log("FARMER ID:", farmerId);
+  console.log("=================================");
+
+  // 1. Test farmer_orders
+  const {
+    data: farmerOrders,
+    error: farmerOrdersError,
+  } = await supabase
     .from("farmer_orders")
-    .select(`
-      id,
-      order_id,
-      farmer_id,
-      status,
-      farmer_amount,
-      platform_fee,
-      payout_status,
-      created_at,
-
-      orders (
-        id,
-        buyer_id,
-        total_amount,
-        payment_reference,
-        payment_status,
-        order_status,
-        delivery_address,
-        delivery_state,
-        delivery_city,
-        phone,
-        notes,
-        created_at,
-
-        order_items (
-          id,
-          order_id,
-          product_id,
-          quantity,
-          unit_price,
-          subtotal,
-
-          products (
-            id,
-            name,
-            image,
-            price,
-            farmer_id
-          )
-        )
-      )
-    `)
+    .select("*")
     .eq("farmer_id", farmerId)
     .order("created_at", {
       ascending: false,
     });
 
-  if (error) {
-    console.error(
-      "GET FARMER ORDERS ERROR:",
-      error
-    );
-
-    throw error;
-  }
-
-  const flattenedOrders = [];
-
-  /*
-    Convert the nested Supabase response
-    into a flat structure.
-  */
-
-  for (const farmerOrder of data || []) {
-    const order = farmerOrder.orders;
-
-    if (!order) {
-      continue;
-    }
-
-    /*
-      Only include products belonging
-      to this farmer.
-    */
-
-    const farmerItems =
-      (order.order_items || []).filter(
-        (item) =>
-          item.products?.farmer_id ===
-          farmerId
-      );
-
-    for (const item of farmerItems) {
-      flattenedOrders.push({
-        /* ================================
-           FARMER ORDER
-        ================================= */
-
-        farmer_order_id:
-          farmerOrder.id,
-
-        farmer_id:
-          farmerOrder.farmer_id,
-
-        status:
-          farmerOrder.status,
-
-        farmer_amount:
-          farmerOrder.farmer_amount,
-
-        platform_fee:
-          farmerOrder.platform_fee,
-
-        payout_status:
-          farmerOrder.payout_status,
-
-        farmer_order_created_at:
-          farmerOrder.created_at,
-
-
-        /* ================================
-           MASTER ORDER
-        ================================= */
-
-        order_id:
-          order.id,
-
-        buyer_id:
-          order.buyer_id,
-
-        total_amount:
-          order.total_amount,
-
-        payment_reference:
-          order.payment_reference,
-
-        payment_status:
-          order.payment_status,
-
-        order_status:
-          order.order_status,
-
-        delivery_address:
-          order.delivery_address,
-
-        delivery_state:
-          order.delivery_state,
-
-        delivery_city:
-          order.delivery_city,
-
-        phone:
-          order.phone,
-
-        notes:
-          order.notes,
-
-        order_created_at:
-          order.created_at,
-
-
-        /* ================================
-           ORDER ITEM
-        ================================= */
-
-        order_item_id:
-          item.id,
-
-        product_id:
-          item.product_id,
-
-        quantity:
-          item.quantity,
-
-        unit_price:
-          item.unit_price,
-
-        subtotal:
-          item.subtotal,
-
-
-        /* ================================
-           PRODUCT
-        ================================= */
-
-        product_name:
-          item.products?.name ||
-          "Product",
-
-        product_image:
-          item.products?.image ||
-          "",
-
-        product_price:
-          item.products?.price ||
-          0,
-
-        product_farmer_id:
-          item.products?.farmer_id,
-      });
-    }
-  }
-
+  console.log("1. farmer_orders DATA:", farmerOrders);
   console.log(
-    "FARMER ORDERS:",
-    flattenedOrders
+    "1. farmer_orders ERROR:",
+    farmerOrdersError
   );
 
-  return flattenedOrders;
+  if (farmerOrdersError) {
+    throw farmerOrdersError;
+  }
+
+  if (!farmerOrders?.length) {
+    console.log("STOP: farmer_orders is empty.");
+    return [];
+  }
+
+  // 2. Extract order IDs
+  const orderIds = [
+    ...new Set(
+      farmerOrders
+        .map((order) => order.order_id)
+        .filter(Boolean)
+    ),
+  ];
+
+  console.log("2. ORDER IDS:", orderIds);
+
+  // 3. Test orders table
+  const {
+    data: masterOrders,
+    error: masterOrdersError,
+  } = await supabase
+    .from("orders")
+    .select("*")
+    .in("id", orderIds);
+
+  console.log(
+    "3. orders DATA:",
+    masterOrders
+  );
+
+  console.log(
+    "3. orders ERROR:",
+    masterOrdersError
+  );
+
+  if (masterOrdersError) {
+    throw masterOrdersError;
+  }
+
+  // 4. Test order_items
+  const {
+    data: orderItems,
+    error: orderItemsError,
+  } = await supabase
+    .from("order_items")
+    .select(`
+      *,
+      products (
+        id,
+        name,
+        image,
+        price,
+        farmer_id
+      )
+    `)
+    .in("order_id", orderIds);
+
+  console.log(
+    "4. order_items DATA:",
+    orderItems
+  );
+
+  console.log(
+    "4. order_items ERROR:",
+    orderItemsError
+  );
+
+  if (orderItemsError) {
+    throw orderItemsError;
+  }
+
+  // 5. Group items by farmer_order so each returned object
+  //    represents a single farmer_order containing all products
+  //    from the same master order that belong to this farmer.
+  const result = farmerOrders.map((farmerOrder) => {
+    const master = masterOrders?.find(
+      (o) => o.id === farmerOrder.order_id
+    );
+
+    const itemsForFarmer = (orderItems || []).filter(
+      (item) =>
+        item.order_id === farmerOrder.order_id &&
+        item.products?.farmer_id === farmerId
+    );
+
+    return {
+      // Farmer order fields
+      id: farmerOrder.id,
+      farmer_order_id: farmerOrder.id,
+      order_id: farmerOrder.order_id,
+      farmer_id: farmerOrder.farmer_id,
+      subtotal: farmerOrder.subtotal,
+      platform_fee: farmerOrder.platform_fee,
+      farmer_amount: farmerOrder.farmer_amount,
+      status: farmerOrder.status || "pending",
+      payout_status: farmerOrder.payout_status || "pending",
+      created_at: farmerOrder.created_at,
+
+      // Master order flattened
+      order: master || null,
+      buyer_id: master?.buyer_id || null,
+      total_amount: master?.total_amount || 0,
+      payment_status: master?.payment_status || "pending",
+      order_status: master?.order_status || "pending",
+      order_created_at: master?.created_at || null,
+      delivery_address: master?.delivery_address || "",
+      delivery_state: master?.delivery_state || "",
+      delivery_city: master?.delivery_city || "",
+      phone: master?.phone || "",
+      notes: master?.notes || null,
+
+      // Items belonging to this farmer within the master order
+      items: itemsForFarmer.map((item) => ({
+        order_item_id: item.id,
+        order_id: item.order_id,
+        product_id: item.product_id || item.products?.id,
+        quantity: item.quantity,
+        unit_price: item.unit_price,
+        subtotal: item.subtotal,
+        products: item.products || null,
+        product_name: item.products?.name,
+        product_image: item.products?.image,
+      })),
+    };
+  });
+
+  console.log("5. GROUPED RESULT:", result);
+  console.log("=================================");
+
+  return result;
 };
 
 
@@ -482,6 +441,75 @@ export const updateFarmerOrderStatus = async (
     );
 
     throw error;
+  }
+
+  // After updating the farmer_orders row, attempt to
+  // update the master orders.order_status so buyers
+  // see status changes when appropriate.
+  try {
+    // Fetch the farmer_order to get the master order_id
+    const { data: fo, error: foErr } = await supabase
+      .from("farmer_orders")
+      .select("order_id")
+      .eq("id", farmerOrderId)
+      .eq("farmer_id", farmerId)
+      .single();
+
+    if (foErr) {
+      console.warn("Could not fetch farmer_order for propagation:", foErr);
+      return data;
+    }
+
+    const orderId = fo?.order_id;
+
+    if (!orderId) return data;
+
+    // Get all farmer_orders for this master order
+    const { data: allFO, error: allFOErr } = await supabase
+      .from("farmer_orders")
+      .select("status")
+      .eq("order_id", orderId);
+
+    if (allFOErr) {
+      console.warn("Could not fetch related farmer_orders:", allFOErr);
+      return data;
+    }
+
+    const statuses = (allFO || []).map((r) => r.status || "pending");
+
+    // If every farmer_order is delivered, mark master order as delivered.
+    let newMasterStatus = null;
+
+    if (statuses.length > 0 && statuses.every((s) => s === "delivered")) {
+      newMasterStatus = "delivered";
+    } else if (statuses.some((s) => ["processing", "ready", "shipped", "out_for_delivery"].includes(s))) {
+      newMasterStatus = "processing";
+    }
+
+    if (newMasterStatus) {
+      // Prefer calling a SECURITY DEFINER RPC that safely updates the
+      // master order (avoids RLS recursion/policy issues).
+      try {
+        const { data: rpcData, error: rpcErr } = await supabase.rpc(
+          "propagate_farmer_order_status",
+          {
+            p_order_id: orderId,
+            p_new_status: newMasterStatus,
+            p_farmer_id: farmerId,
+          }
+        );
+
+        if (rpcErr) {
+          console.warn("Failed to call propagate_farmer_order_status:", rpcErr);
+        } else {
+          console.log("propagate_farmer_order_status succeeded:", rpcData);
+        }
+      } catch (rpcCallErr) {
+        console.warn("Error calling propagate_farmer_order_status:", rpcCallErr);
+      }
+    }
+  } catch (propErr) {
+    console.warn("Error propagating farmer order status:", propErr);
   }
 
   return data;

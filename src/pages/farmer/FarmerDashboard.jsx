@@ -455,30 +455,23 @@ const FarmerDashboard = () => {
 
             <div className="divide-y divide-slate-100">
 
-              {recentOrders.map(
-                (order) => (
+              {recentOrders.map((order) => (
 
-                  <div
-                    key={
-                      order.order_item_id
-                    }
-                    className="flex flex-col gap-5 p-6 lg:flex-row lg:items-center lg:justify-between"
-                  >
+                <div
+                  key={order.farmer_order_id}
+                  className="flex flex-col gap-5 p-6 lg:flex-row lg:items-center lg:justify-between"
+                >
 
 
                     {/* PRODUCT */}
 
                     <div className="flex items-center gap-4">
 
-                      {order.product_image ? (
+                      {order.items && order.items[0]?.product_image ? (
 
                         <img
-                          src={
-                            order.product_image
-                          }
-                          alt={
-                            order.product_name
-                          }
+                          src={order.items[0].product_image}
+                          alt={order.items[0].product_name}
                           className="h-20 w-20 rounded-2xl object-cover"
                         />
 
@@ -486,10 +479,7 @@ const FarmerDashboard = () => {
 
                         <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-slate-100">
 
-                          <Package
-                            size={25}
-                            className="text-slate-400"
-                          />
+                          <Package size={25} className="text-slate-400" />
 
                         </div>
 
@@ -499,30 +489,24 @@ const FarmerDashboard = () => {
                       <div>
 
                         <h3 className="font-semibold text-slate-900">
-                          {order.product_name ||
-                            "Product Order"}
+                          {order.items && order.items[0]?.product_name
+                            ? order.items[0].product_name
+                            : "Product Order"}
                         </h3>
 
 
                         <p className="mt-1 text-sm text-slate-500">
-                          Order #
-                          {order.order_id?.slice(
-                            0,
-                            8
-                          )}
+                          Order #{order.order_id?.slice(0, 8)}
                         </p>
 
 
                         <p className="mt-1 text-sm text-slate-500">
-
-                          {order.quantity ||
-                            0}{" "}
-
-                          unit
-                          {order.quantity !==
-                          1
-                            ? "s"
-                            : ""}
+                          {order.items
+                            ? order.items.reduce(
+                                (sum, it) => sum + Number(it.quantity || 0),
+                                0
+                              )
+                            : 0} units
 
                         </p>
 
@@ -583,32 +567,35 @@ const FarmerDashboard = () => {
 
                       <div>
 
-                        <p className="text-xs text-slate-400">
-                          Status
-                        </p>
+                        <p className="text-xs text-slate-400">Status</p>
 
-                        <span
-                          className={`mt-1 inline-flex rounded-full px-3 py-1 text-xs font-semibold capitalize ${
-                            order.status ===
-                            "delivered"
+                        <span className={`mt-1 inline-flex rounded-full px-3 py-1 text-xs font-semibold capitalize ${
+                            order.status === "delivered"
                               ? "bg-emerald-100 text-emerald-700"
-                              : order.status ===
-                                "processing"
+                              : order.status === "processing"
                               ? "bg-blue-100 text-blue-700"
-                              : order.status ===
-                                "shipped"
+                              : order.status === "shipped"
                               ? "bg-purple-100 text-purple-700"
-                              : order.status ===
-                                "cancelled"
+                              : order.status === "cancelled"
                               ? "bg-red-100 text-red-700"
                               : "bg-orange-100 text-orange-700"
-                          }`}
-                        >
+                          }`}>{order.status || "pending"}</span>
 
-                          {order.status ||
-                            "pending"}
+                      </div>
 
-                        </span>
+                      {/* PAYMENT STATUS */}
+
+                      <div>
+
+                        <p className="text-xs text-slate-400">Payment</p>
+
+                        <span className={`mt-1 inline-flex rounded-full px-3 py-1 text-xs font-semibold capitalize ${
+                            order.payment_status === "paid"
+                              ? "bg-emerald-100 text-emerald-700"
+                              : order.payment_status === "failed"
+                              ? "bg-red-100 text-red-700"
+                              : "bg-orange-100 text-orange-700"
+                          }`}>{order.payment_status || "pending"}</span>
 
                       </div>
 
