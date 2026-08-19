@@ -53,7 +53,7 @@ const About = () => {
           <div className="mt-8 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm text-slate-500">Interested in selling on FarmLink NG?</p>
 
-            <Link to="/auth" className="rounded-xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white">
+            <Link to="/auth/register" className="rounded-xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white">
               Create a Seller Account
             </Link>
           </div>

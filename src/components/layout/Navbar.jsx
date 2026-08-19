@@ -5,6 +5,8 @@ import {
   Menu,
   X,
   Search,
+  Sun,
+  Moon,
   User,
   UserCircle,
   LogOut,
@@ -18,6 +20,7 @@ import Logo from "../../assets/images/navbar/logo.png";
 
 import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../lib/supabase";
+import { useTheme } from "../../context/ThemeContext";
 
 const Navbar = () => {
   const { user, profile, loading } = useAuth();
@@ -29,6 +32,7 @@ const Navbar = () => {
     useState(false);
 
   const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
 
   /* =========================================
      NAVIGATION LINKS
@@ -106,7 +110,7 @@ const Navbar = () => {
   };
 
   return (
-    <header className="sticky top-3 z-50 mx-3 rounded-2xl border border-slate-200 bg-white/90 shadow-sm backdrop-blur-lg sm:mx-5">
+    <header className="site-navbar sticky top-3 z-50 mx-3 rounded-2xl border border-slate-200 bg-white/90 shadow-sm backdrop-blur-lg sm:mx-5">
 
       <div className="container-width">
 
@@ -186,6 +190,20 @@ const Navbar = () => {
               aria-label="Search"
             >
               <Search size={22} className="text-slate-700" />
+            </button>
+
+            {/* THEME TOGGLE */}
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="hidden h-11 w-11 items-center justify-center rounded-full transition hover:bg-emerald-100 lg:flex"
+              aria-label="Toggle theme"
+            >
+              {theme === "dark" ? (
+                <Sun size={20} className="text-slate-200" />
+              ) : (
+                <Moon size={20} className="text-slate-700" />
+              )}
             </button>
 
 

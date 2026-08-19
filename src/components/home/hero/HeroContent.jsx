@@ -1,11 +1,13 @@
 
 import { ArrowRight, Store } from "lucide-react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 import { Button } from "../../ui";
 import HeroStats from "./HeroStats";
 
 const HeroContent = () => {
+  const navigate = useNavigate();
   return (
     <motion.div
       initial={{ opacity: 0, x: -30 }}
@@ -35,6 +37,7 @@ const HeroContent = () => {
         <Button
           rightIcon={<ArrowRight size={18} />}
           className="w-full sm:w-auto"
+          onClick={() => navigate('/marketplace')}
         >
           Explore Marketplace
         </Button>
@@ -43,6 +46,7 @@ const HeroContent = () => {
           variant="outline"
           leftIcon={<Store size={18} />}
           className="w-full sm:w-auto"
+          onClick={() => navigate('/auth/register')}
         >
           Become a Seller
         </Button>

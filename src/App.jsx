@@ -45,6 +45,8 @@ import FarmProfile from "./pages/farmer/FarmProfile";
 ========================================= */
 import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Register";
+import Farmers from "./pages/public/Farmers";
+import FarmerProfile from "./pages/public/FarmerProfile";
 
 
 /* =========================================
@@ -100,6 +102,16 @@ const App = () => {
           <Route
             path="/product/:id"
             element={<ProductDetails />}
+          />
+
+          <Route
+            path="/farmers"
+            element={<Farmers />}
+          />
+
+          <Route
+            path="/farmer/:id"
+            element={<FarmerProfile />}
           />
 
 

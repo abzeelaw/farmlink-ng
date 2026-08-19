@@ -1,10 +1,10 @@
 const ProductGallery = ({ product }) => {
   return (
-    <div className="rounded-3xl bg-white p-6 shadow-lg">
+    <div className="rounded-2xl bg-white p-4 shadow">
       <img
         src={product.image}
         alt={product.name}
-        className="h-[500px] w-full rounded-2xl object-cover"
+        className="h-[380px] w-full rounded-xl object-cover"
       />
     </div>
   );

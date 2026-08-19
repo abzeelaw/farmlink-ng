@@ -3,7 +3,7 @@ import {
   MapPin,
   Star,
   BadgeCheck,
-  UserRound,
+  User,
   ShoppingBag,
 } from "lucide-react";
 
@@ -51,10 +51,7 @@ const FarmerCard = ({ farmer }) => {
         ) : (
           <div className="flex h-full items-center justify-center">
             <div className="flex h-24 w-24 items-center justify-center rounded-full bg-emerald-100">
-              <UserRound
-                size={48}
-                className="text-emerald-600"
-              />
+                <User size={48} className="text-emerald-600" />
             </div>
           </div>
         )}

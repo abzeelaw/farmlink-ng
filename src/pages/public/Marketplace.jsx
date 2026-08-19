@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 
 import MarketplaceHero from "../../components/marketplace/MarketplaceHero";
 import SearchBar from "../../components/marketplace/SearchBar";
@@ -9,6 +10,21 @@ import ProductGrid from "../../components/marketplace/ProductGrid";
 const Marketplace = () => {
   const [activeCategory, setActiveCategory] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedState, setSelectedState] = useState("All States");
+  const [sortBy, setSortBy] = useState("Newest");
+
+  const location = useLocation();
+
+  useEffect(() => {
+    const run = () => {
+      const params = new URLSearchParams(location.search);
+      const q = params.get("q") || "";
+
+      if (q) setSearchTerm(q);
+    };
+
+    run();
+  }, [location.search]);
 
   return (
     <>
@@ -24,11 +40,18 @@ const Marketplace = () => {
         setActiveCategory={setActiveCategory}
       />
 
-      <FilterBar />
+      <FilterBar
+        selectedState={selectedState}
+        setSelectedState={setSelectedState}
+        sortBy={sortBy}
+        setSortBy={setSortBy}
+      />
 
       <ProductGrid
         activeCategory={activeCategory}
         searchTerm={searchTerm}
+        selectedState={selectedState}
+        sortBy={sortBy}
       />
     </>
   );

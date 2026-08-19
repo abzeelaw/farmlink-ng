@@ -8,13 +8,46 @@ html {
   scroll-behavior: smooth;
 }
 
+:root {
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --text: #0f172a;
+  --muted: #64748b;
+  --border: #e6eef8;
+}
+
+.dark {
+  --bg: #071226;
+  --card: #0b1220;
+  --text: #e6eef8;
+  --muted: #94a3b8;
+  --border: #1f2937;
+}
+
 body {
   margin: 0;
   min-width: 320px;
   font-family: "Poppins", sans-serif;
-  background-color: #f8fafc;
-  color: #0f172a;
+  background-color: var(--bg);
+  color: var(--text);
 }
+
+/* Global overrides to make common utility colors adapt to theme */
+.dark .bg-white { background-color: var(--card) !important; }
+.dark .bg-slate-50 { background-color: var(--card) !important; }
+.dark .text-slate-900 { color: var(--text) !important; }
+.dark .text-slate-800 { color: var(--text) !important; }
+.dark .text-slate-600 { color: var(--muted) !important; }
+.dark .border-slate-200 { border-color: var(--border) !important; }
+
+/* Navbar specific */
+.site-navbar { background-color: rgba(255,255,255,0.9); }
+.dark .site-navbar { background-color: rgba(8,14,24,0.65) !important; border-color: var(--border) !important; }
+
+/* Buttons and icons */
+.dark .rounded-full.bg-emerald-100 { background-color: rgba(16,185,129,0.08) !important; }
+.dark .bg-emerald-50 { background-color: rgba(16,185,129,0.04) !important; }
+
 
 *,
 *::before,
