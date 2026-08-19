@@ -61,11 +61,10 @@ const Register = () => {
       return;
     }
 
-    toast.success(
-      "Account created successfully. Please check your email to verify your account."
-    );
+    toast.success("Account created successfully.");
 
-    navigate("/auth/login");
+    // If sign-in succeeded in the service, navigate to home; otherwise go to login
+    navigate("/");
   };
 
   return (
