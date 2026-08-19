@@ -170,7 +170,37 @@ const Farmers = () => {
           </button>
         </div>
 
-        <div className="text-sm text-slate-500">Showing: {view === 'pending' ? 'Pending verifications' : 'All farmers'}</div>
+        <div className="flex items-center gap-3">
+          <div className="text-sm text-slate-500">Showing: {view === 'pending' ? 'Pending verifications' : 'All farmers'}</div>
+
+          {farmers.length > 0 && (
+            <button
+              onClick={async () => {
+                try {
+                  const ids = farmers.map(f => f.id);
+                  if (ids.length === 0) return;
+
+                  const { error } = await supabase
+                    .from('profiles')
+                    .update({ verification_status: 'verified' })
+                    .in('id', ids)
+                    .eq('role', 'farmer');
+
+                  if (error) throw error;
+
+                  toast.success('Verified visible farmers');
+                  await fetchFarmers(view);
+                } catch (err) {
+                  console.error('Bulk verify failed', err);
+                  toast.error(err.message || 'Bulk verify failed');
+                }
+              }}
+              className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white"
+            >
+              Verify Visible
+            </button>
+          )}
+        </div>
       </div>
 
       {farmers.length === 0 ? (

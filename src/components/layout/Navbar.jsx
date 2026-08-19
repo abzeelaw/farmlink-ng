@@ -67,6 +67,8 @@ const Navbar = () => {
     ? "Guest"
     : role === "farmer"
     ? "Farmer"
+    : role === "admin"
+    ? "Admin"
     : "Buyer";
 
   /* =========================================
@@ -300,13 +302,12 @@ const Navbar = () => {
 
                   {/* Avatar */}
 
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-100">
-
-                    <User
-                      size={20}
-                      className="text-emerald-600"
-                    />
-
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-100 overflow-hidden">
+                    {profile?.avatar_url || profile?.farm_image ? (
+                      <img src={profile?.avatar_url || profile?.farm_image} alt={displayName} className="h-9 w-9 object-cover rounded-full" />
+                    ) : (
+                      <User size={20} className="text-emerald-600" />
+                    )}
                   </div>
 
 
@@ -341,12 +342,12 @@ const Navbar = () => {
 
                       <div className="flex items-center gap-3">
 
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-100">
-
-                          <UserCircle
-                            size={24}
-                            className="text-emerald-600"
-                          />
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-100 overflow-hidden">
+                          {profile?.avatar_url || profile?.farm_image ? (
+                            <img src={profile?.avatar_url || profile?.farm_image} alt={displayName} className="h-10 w-10 object-cover rounded-full" />
+                          ) : (
+                            <UserCircle size={24} className="text-emerald-600" />
+                          )}
 
                         </div>
 
@@ -395,6 +396,17 @@ const Navbar = () => {
 
                       </Link>
 
+                    )}
+
+                    {role === "admin" && (
+                      <Link
+                        to="/admin/farmers"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="mt-2 flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-600"
+                      >
+                        <LayoutDashboard size={18} />
+                        Admin Dashboard
+                      </Link>
                     )}
 
 
@@ -590,12 +602,12 @@ const Navbar = () => {
 
                   <div className="flex items-center gap-3">
 
-                    <div className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-100">
-
-                      <User
-                        size={21}
-                        className="text-emerald-600"
-                      />
+                    <div className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-100 overflow-hidden">
+                      {profile?.avatar_url || profile?.farm_image ? (
+                        <img src={profile?.avatar_url || profile?.farm_image} alt={displayName} className="h-11 w-11 object-cover rounded-full" />
+                      ) : (
+                        <User size={21} className="text-emerald-600" />
+                      )}
 
                     </div>
 
@@ -636,6 +648,17 @@ const Navbar = () => {
 
                     </Link>
 
+                  )}
+
+                  {role === "admin" && (
+                    <Link
+                      to="/admin/farmers"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-3 rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-emerald-50"
+                    >
+                      <LayoutDashboard size={19} />
+                      Admin Dashboard
+                    </Link>
                   )}
 
 

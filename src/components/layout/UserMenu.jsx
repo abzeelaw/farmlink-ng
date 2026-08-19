@@ -101,7 +101,9 @@ const UserMenu = () => {
      LOGGED-IN USER
   ========================================= */
 
-  const role = profile?.role?.toLowerCase();
+  const role = profile && typeof profile.role === 'string'
+    ? profile.role.toLowerCase().trim()
+    : undefined;
 
   const isFarmer = role === "farmer";
   const isAdmin = role === "admin";
@@ -122,10 +124,14 @@ const UserMenu = () => {
         className="flex items-center gap-2 rounded-xl px-3 py-2 transition hover:bg-emerald-50"
       >
         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100">
-          <User
-            size={21}
-            className="text-emerald-700"
-          />
+          {profile?.avatar_url || profile?.farm_image ? (
+            <img src={profile?.avatar_url || profile?.farm_image} alt={displayName} className="h-10 w-10 rounded-full object-cover" />
+          ) : (
+            <User
+              size={21}
+              className="text-emerald-700"
+            />
+          )}
         </div>
 
         <div className="hidden sm:block text-left">
@@ -166,6 +172,31 @@ const UserMenu = () => {
             </span>
 
           </div>
+
+          {/* ADMIN - Refresh Profile Helper */}
+          {isAdmin && (
+            <div className="px-3 pt-3">
+              <button
+                onClick={async () => {
+                  try {
+                    if (window.refreshAuthProfile) {
+                      await window.refreshAuthProfile();
+                      toast.success('Profile refreshed');
+                      setOpen(false);
+                    } else {
+                      toast.error('Refresh helper not available. Please reload the page.');
+                    }
+                  } catch (err) {
+                    console.error('Refresh profile failed', err);
+                    toast.error(err?.message || 'Unable to refresh profile');
+                  }
+                }}
+                className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-emerald-50"
+              >
+                Refresh Profile
+              </button>
+            </div>
+          )}
 
           {/* FARMER LINKS */}
 

@@ -7,12 +7,13 @@ import { createProduct } from "../../services/productService";
 import { useAuth } from "../../context/AuthContext";
 
 const AddProduct = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
 
   const [categories, setCategories] = useState([]);
   const [image, setImage] = useState(null);
 
   const [formData, setFormData] = useState({
+    farmer_id: "",
     category_id: "",
     name: "",
     description: "",
@@ -21,6 +22,8 @@ const AddProduct = () => {
     state: "",
     city: "",
   });
+
+  const [farmersList, setFarmersList] = useState([]);
 
   useEffect(() => {
     const loadCategories = async () => {
@@ -34,6 +37,23 @@ const AddProduct = () => {
     loadCategories();
   }, []);
 
+  useEffect(() => {
+    // If admin, load farmers for selection
+    const loadFarmers = async () => {
+      if (!profile || profile.role !== "admin") return;
+
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, full_name, farm_name, email")
+        .eq("role", "farmer")
+        .order("created_at", { ascending: false });
+
+      setFarmersList(data || []);
+    };
+
+    loadFarmers();
+  }, [profile]);
+
   const handleChange = (e) => {
     setFormData((prev) => ({
       ...prev,
@@ -44,6 +64,12 @@ const AddProduct = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Prevent unverified farmers from adding products
+    if (profile?.role === "farmer" && profile?.verification_status !== "verified") {
+      toast.error("Your account is not verified yet. Please complete your profile and wait for admin verification before adding products.");
+      return;
+    }
+
     try {
       let imageUrl = "";
 
@@ -52,7 +78,7 @@ const AddProduct = () => {
       }
 
       const { error } = await createProduct({
-        farmer_id: user.id,
+        farmer_id: formData.farmer_id || user.id,
         ...formData,
         image: imageUrl,
       });
@@ -104,6 +130,22 @@ const AddProduct = () => {
             </option>
           ))}
         </select>
+
+        {profile?.role === "admin" && (
+          <select
+            name="farmer_id"
+            value={formData.farmer_id}
+            onChange={handleChange}
+            className="w-full rounded-lg border p-3"
+          >
+            <option value="">Select Farmer</option>
+            {farmersList.map((f) => (
+              <option key={f.id} value={f.id}>
+                {f.farm_name || f.full_name || f.email}
+              </option>
+            ))}
+          </select>
+        )}
 
         <input
           type="text"

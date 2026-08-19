@@ -27,7 +27,7 @@ import {
 
 const FarmerDashboard = () => {
 
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
 
   const [farmer, setFarmer] =
     useState(null);
@@ -220,17 +220,35 @@ const FarmerDashboard = () => {
             </div>
 
 
+            {profile?.role === 'admin' || profile?.verification_status === 'verified' ? (
+              <Link
+                to="/farmer/products"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 font-semibold text-white transition hover:bg-emerald-700"
+              >
+
+                Manage Products
+
+                <ArrowRight
+                  size={18}
+                />
+
+              </Link>
+            ) : (
+              <Link
+                to="/farmer/profile"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 py-3 font-semibold text-slate-700"
+              >
+                Complete Profile
+                <ArrowRight size={18} />
+              </Link>
+            )}
+
+            {/* Edit Profile button for farmers */}
             <Link
-              to="/farmer/products"
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 font-semibold text-white transition hover:bg-emerald-700"
+              to="/farmer/profile"
+              className="ml-3 inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 py-3 font-semibold text-slate-700"
             >
-
-              Manage Products
-
-              <ArrowRight
-                size={18}
-              />
-
+              Edit Profile
             </Link>
 
           </div>

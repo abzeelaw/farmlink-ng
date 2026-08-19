@@ -32,6 +32,7 @@ import MyProducts from "../pages/farmer/MyProducts";
 import EditProduct from "../pages/farmer/EditProduct";
 import RoleProtectedRoute from "../components/auth/RoleProtectedRoute";
 import AdminFarmers from "../pages/admin/Farmers";
+import BuyerDashboard from "../pages/buyer/BuyerDashboard";
 
 
 const router = createBrowserRouter([
@@ -117,7 +118,12 @@ const router = createBrowserRouter([
   {
     path: "/buyer",
     element: <DashboardLayout />,
-    children: [],
+    children: [
+      {
+        index: true,
+        element: <BuyerDashboard />,
+      },
+    ],
   },
 
  {
