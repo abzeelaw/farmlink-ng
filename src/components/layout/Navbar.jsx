@@ -172,13 +172,20 @@ const Navbar = () => {
 
             <button
               type="button"
+              onClick={() => {
+                // Prompt for a query and navigate to marketplace with query param
+                const q = window.prompt("Search for products, farmers or locations:");
+
+                if (q && q.trim() !== "") {
+                  navigate(`/marketplace?q=${encodeURIComponent(q.trim())}`);
+                } else {
+                  navigate("/marketplace");
+                }
+              }}
               className="hidden h-11 w-11 items-center justify-center rounded-full transition hover:bg-emerald-100 lg:flex"
               aria-label="Search"
             >
-              <Search
-                size={22}
-                className="text-slate-700"
-              />
+              <Search size={22} className="text-slate-700" />
             </button>
 
 

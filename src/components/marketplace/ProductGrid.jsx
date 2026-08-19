@@ -5,6 +5,8 @@ import { getProducts } from "../../services/productService";
 const ProductGrid = ({
   activeCategory,
   searchTerm,
+  selectedState,
+  sortBy,
 }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -37,6 +39,25 @@ const ProductGrid = ({
           );
         }
 
+        // State filter
+        if (selectedState && selectedState !== "All States") {
+          formattedProducts = formattedProducts.filter(
+            (product) => product.state === selectedState
+          );
+        }
+
+        // Sorting
+        if (sortBy === "Lowest Price") {
+          formattedProducts.sort((a, b) => Number(a.price) - Number(b.price));
+        } else if (sortBy === "Highest Price") {
+          formattedProducts.sort((a, b) => Number(b.price) - Number(a.price));
+        } else if (sortBy === "Highest Rated") {
+          formattedProducts.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+        } else {
+          // Newest
+          formattedProducts.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        }
+
         setProducts(formattedProducts);
       }
 
@@ -44,7 +65,7 @@ const ProductGrid = ({
     };
 
     loadProducts();
-  }, [activeCategory, searchTerm]);
+  }, [activeCategory, searchTerm, selectedState, sortBy]);
 
   if (loading) {
     return (
@@ -70,7 +91,7 @@ const ProductGrid = ({
 
   return (
     <section className="container-width py-12">
-      <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5">
         {products.map((product) => (
           <ProductCard
             key={product.id}

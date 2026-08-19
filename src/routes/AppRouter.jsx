@@ -17,6 +17,8 @@ import Register from "../pages/auth/Register";
 import ForgotPassword from "../pages/auth/ForgotPassword";
 import ResetPassword from "../pages/auth/ResetPassword";
 import ProductDetails from "../pages/public/ProductDetails";
+import Farmers from "../pages/public/Farmers";
+import FarmerProfile from "../pages/public/FarmerProfile";
 import Cart from "../pages/cart/Cart";
 import Checkout from "../pages/checkout/Checkout";
 import ProtectedRoute from "../components/auth/ProtectedRoute";
@@ -73,6 +75,15 @@ const router = createBrowserRouter([
       {
         path: "product/:id",
         element: <ProductDetails />
+      }
+      ,
+      {
+        path: "farmers",
+        element: <Farmers />,
+      },
+      {
+        path: "farmer/:id",
+        element: <FarmerProfile />,
       }
     ],
   },
