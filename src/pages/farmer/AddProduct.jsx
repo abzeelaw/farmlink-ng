@@ -71,24 +71,47 @@ const AddProduct = () => {
     }
 
     try {
-      let imageUrl = "";
+  let imageUrl = "";
 
-      if (image) {
-        imageUrl = await uploadProductImage(image);
-      }
+  if (image) {
+    imageUrl = await uploadProductImage(image);
+  }
 
-      const { error } = await createProduct({
-        farmer_id: formData.farmer_id || user.id,
-        ...formData,
-        image: imageUrl,
-      });
+  const farmerId = formData.farmer_id || user?.id;
 
-      if (error) throw error;
+  console.log("========== PRODUCT DEBUG ==========");
+  console.log("USER ID:", user?.id);
+  console.log("FARMER ID:", farmerId);
+  console.log("CATEGORY ID:", formData.category_id);
+  console.log("NAME:", formData.name);
+  console.log("PRICE:", Number(formData.price));
+  console.log("STOCK:", Number(formData.stock));
+  console.log("STATE:", formData.state);
+  console.log("CITY:", formData.city);
+  console.log("===================================");
+
+  const { error } = await createProduct({
+    farmer_id: farmerId,
+    category_id: formData.category_id,
+    name: formData.name.trim(),
+    description: formData.description.trim(),
+    price: Number(formData.price),
+    stock: Number(formData.stock),
+    state: formData.state.trim(),
+    city: formData.city.trim(),
+    image: imageUrl,
+  });
+
+  if (error) {
+    console.error("PRODUCT INSERT ERROR:", error);
+    throw error;
+  }
 
       toast.success("Product added successfully");
 
-      setFormData({
-        category_id: "",
+     setFormData({
+  farmer_id: "",
+  category_id: "",
         name: "",
         description: "",
         price: "",

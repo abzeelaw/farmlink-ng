@@ -337,7 +337,216 @@ const FarmProfile = () => {
     ? URL.createObjectURL(imageFile)
     : formData.farm_image;
 
-  return <div>Farm Profile</div>;
+  return (
+    <div className="container-width py-10 md:py-12">
+
+      {/* Header */}
+      <div className="mb-8">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900">
+              Farm Profile
+            </h1>
+
+            <p className="mt-2 text-slate-500">
+              Tell customers and our verification
+              team about your farm.
+            </p>
+          </div>
+
+          {/* Verification Status */}
+          <div
+            className={`inline-flex w-fit items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold ${
+              verificationStatus === "verified"
+                ? "bg-emerald-100 text-emerald-700"
+                : verificationStatus === "rejected"
+                  ? "bg-red-100 text-red-700"
+                  : "bg-amber-100 text-amber-700"
+            }`}
+          >
+            <ShieldCheck size={18} />
+
+            {verificationStatus === "verified"
+              ? "Verified Farmer"
+              : verificationStatus === "rejected"
+                ? "Verification Rejected"
+                : "Verification Pending"}
+          </div>
+        </div>
+      </div>
+
+      {/* Form */}
+      <form
+        onSubmit={handleSubmit}
+        className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8"
+      >
+        <div className="grid gap-8 lg:grid-cols-3">
+
+          {/* Farm Image */}
+          <div>
+            <label className="mb-3 block font-semibold text-slate-900">
+              Farm Image
+            </label>
+
+            <div className="relative overflow-hidden rounded-3xl border-2 border-dashed border-slate-300 bg-slate-50">
+
+              {imagePreview ? (
+                <img
+                  src={imagePreview}
+                  alt="Farm"
+                  className="h-72 w-full object-cover"
+                />
+              ) : (
+                <div className="flex h-72 flex-col items-center justify-center text-slate-400">
+                  <Camera size={42} />
+
+                  <p className="mt-3 text-sm">
+                    Upload your farm image
+                  </p>
+                </div>
+              )}
+
+              <label className="absolute bottom-4 right-4 flex cursor-pointer items-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-lg transition hover:bg-emerald-50">
+                <Camera size={18} />
+
+                Change Image
+
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="hidden"
+                />
+              </label>
+            </div>
+
+            <p className="mt-2 text-xs text-slate-500">
+              PNG, JPG or WEBP. Maximum 5MB.
+            </p>
+          </div>
+
+          {/* Farm Information */}
+          <div className="space-y-6 lg:col-span-2">
+
+            {/* Farm Name */}
+            <div>
+              <label className="mb-2 block font-medium">
+                Farm Name
+              </label>
+
+              <input
+                type="text"
+                name="farm_name"
+                value={formData.farm_name}
+                onChange={handleChange}
+                placeholder="e.g. Green Valley Farm"
+                className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+              />
+            </div>
+
+            {/* Farm Description */}
+            <div>
+              <label className="mb-2 block font-medium">
+                Farm Description
+              </label>
+
+              <textarea
+                name="farm_description"
+                value={
+                  formData.farm_description
+                }
+                onChange={handleChange}
+                rows={5}
+                placeholder="Tell customers about your farm, what you grow or produce, and what makes your farm unique."
+                className="w-full resize-none rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+              />
+            </div>
+
+            {/* Location */}
+            <div className="grid gap-6 md:grid-cols-2">
+
+              <div>
+                <label className="mb-2 block font-medium">
+                  State
+                </label>
+
+                <input
+                  type="text"
+                  name="state"
+                  value={formData.state}
+                  onChange={handleChange}
+                  placeholder="e.g. Kaduna"
+                  className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block font-medium">
+                  City
+                </label>
+
+                <input
+                  type="text"
+                  name="city"
+                  value={formData.city}
+                  onChange={handleChange}
+                  placeholder="e.g. Zaria"
+                  className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                />
+              </div>
+
+            </div>
+
+            {/* Verification Notice */}
+            <div className="rounded-2xl bg-emerald-50 p-5">
+
+              <div className="flex gap-3">
+
+                <ShieldCheck
+                  size={22}
+                  className="mt-0.5 shrink-0 text-emerald-600"
+                />
+
+                <div>
+                  <h3 className="font-semibold text-emerald-800">
+                    Farmer Verification
+                  </h3>
+
+                  <p className="mt-1 text-sm leading-6 text-emerald-700">
+                    Complete your farm information
+                    and upload a clear farm image.
+                    Our admin team will review your
+                    profile before verifying your farm.
+                  </p>
+                </div>
+
+              </div>
+
+            </div>
+
+            {/* Submit */}
+            <div className="flex justify-end">
+
+              <button
+                type="submit"
+                disabled={saving}
+                className="flex items-center gap-2 rounded-xl bg-emerald-600 px-6 py-3 font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <Save size={18} />
+
+                {saving
+                  ? "Saving..."
+                  : "Save Farm Profile"}
+              </button>
+
+            </div>
+
+          </div>
+        </div>
+      </form>
+    </div>
+  );
 };
 
 export default FarmProfile;
